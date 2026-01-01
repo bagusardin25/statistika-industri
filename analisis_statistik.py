@@ -15,10 +15,12 @@ matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
-from scipy.stats import f_oneway, ttest_ind, ttest_1samp, levene
+from scipy.stats import f_oneway, ttest_ind, ttest_1samp, levene, shapiro
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
 from statsmodels.stats.anova import anova_lm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from statsmodels.stats.diagnostic import het_breuschpagan
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -264,17 +266,85 @@ model_multi = sm.OLS(df['Angka_Stunting'], X_multi).fit()
 print(model_multi.summary())
 
 # =====================================================
-# 6. VISUALISASI
+# 5.5 UJI ASUMSI KLASIK REGRESI
+# =====================================================
+print("\n" + "=" * 70)
+print("5.5 UJI ASUMSI KLASIK REGRESI")
+print("=" * 70)
+
+# 5.5.1 Uji Multikolinearitas (VIF)
+print("\n5.5.1 Uji Multikolinearitas (VIF - Variance Inflation Factor)")
+print("-" * 50)
+print("Kriteria: VIF < 10 = Tidak ada multikolinearitas")
+print("          VIF >= 10 = Ada multikolinearitas")
+
+X_vif = df[['Pertumbuhan_Ekonomi', 'Tingkat_Pendidikan', 'Akses_Sanitasi']]
+X_vif = sm.add_constant(X_vif)
+
+vif_data = pd.DataFrame()
+vif_data['Variabel'] = X_vif.columns[1:]
+vif_data['VIF'] = [variance_inflation_factor(X_vif.values, i+1) for i in range(len(X_vif.columns)-1)]
+
+print("\nHasil Uji VIF:")
+for idx, row in vif_data.iterrows():
+    status = "OK (Tidak ada multikolinearitas)" if row['VIF'] < 10 else "MASALAH (Ada multikolinearitas)"
+    print(f"   {row['Variabel']:25} : VIF = {row['VIF']:.4f} -> {status}")
+
+# 5.5.2 Uji Normalitas Residual (Shapiro-Wilk)
+print("\n5.5.2 Uji Normalitas Residual (Shapiro-Wilk)")
+print("-" * 50)
+print("H0: Residual berdistribusi normal")
+print("H1: Residual tidak berdistribusi normal")
+
+residuals = model_multi.resid
+shapiro_stat, shapiro_pvalue = shapiro(residuals)
+
+print(f"\nStatistik Shapiro-Wilk : {shapiro_stat:.4f}")
+print(f"P-value                : {shapiro_pvalue:.4f}")
+print(f"Keputusan (alpha={ALPHA}): {'Tolak H0 - Residual TIDAK normal' if shapiro_pvalue < ALPHA else 'Gagal Tolak H0 - Residual NORMAL'}")
+
+# 5.5.3 Uji Heteroskedastisitas (Breusch-Pagan)
+print("\n5.5.3 Uji Heteroskedastisitas (Breusch-Pagan)")
+print("-" * 50)
+print("H0: Tidak ada heteroskedastisitas (homoskedastis)")
+print("H1: Ada heteroskedastisitas")
+
+bp_test = het_breuschpagan(model_multi.resid, model_multi.model.exog)
+bp_stat = bp_test[0]
+bp_pvalue = bp_test[1]
+
+print(f"\nStatistik Breusch-Pagan : {bp_stat:.4f}")
+print(f"P-value                 : {bp_pvalue:.4f}")
+print(f"Keputusan (alpha={ALPHA}): {'Tolak H0 - Ada HETEROSKEDASTISITAS' if bp_pvalue < ALPHA else 'Gagal Tolak H0 - HOMOSKEDASTIS (OK)'}")
+
+# Ringkasan Asumsi Klasik
+print("\n" + "-" * 50)
+print("RINGKASAN UJI ASUMSI KLASIK:")
+print("-" * 50)
+vif_ok = all(vif_data['VIF'] < 10)
+normal_ok = shapiro_pvalue >= ALPHA
+homo_ok = bp_pvalue >= ALPHA
+
+print(f"   1. Multikolinearitas  : {'TERPENUHI (VIF < 10)' if vif_ok else 'TIDAK TERPENUHI (VIF >= 10)'}")
+print(f"   2. Normalitas Residual: {'TERPENUHI (p >= 0.05)' if normal_ok else 'TIDAK TERPENUHI (p < 0.05)'}")
+print(f"   3. Homoskedastisitas  : {'TERPENUHI (p >= 0.05)' if homo_ok else 'TIDAK TERPENUHI (p < 0.05)'}")
+
+if vif_ok and normal_ok and homo_ok:
+    print("\n   >>> SEMUA ASUMSI KLASIK TERPENUHI - Model regresi VALID <<<")
+else:
+    print("\n   >>> PERHATIAN: Ada asumsi yang tidak terpenuhi <<<")
+
+# =====================================================
+# 6. VISUALISASI (MASING-MASING FILE TERPISAH)
 # =====================================================
 print("\n" + "=" * 70)
 print("6. MEMBUAT VISUALISASI...")
 print("=" * 70)
 
-# Membuat figure dengan multiple subplots
-fig = plt.figure(figsize=(16, 20))
+output_dir = 'D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/'
 
 # 6.1 Scatter Plot dengan Garis Regresi - Pertumbuhan Ekonomi
-ax1 = fig.add_subplot(3, 2, 1)
+fig1, ax1 = plt.subplots(figsize=(10, 7))
 ax1.scatter(df['Pertumbuhan_Ekonomi'], df['Angka_Stunting'], 
             alpha=0.7, s=80, c='steelblue', edgecolors='white', linewidth=1)
 z1 = np.polyfit(df['Pertumbuhan_Ekonomi'], df['Angka_Stunting'], 1)
@@ -282,20 +352,22 @@ p1 = np.poly1d(z1)
 x_line1 = np.linspace(df['Pertumbuhan_Ekonomi'].min(), df['Pertumbuhan_Ekonomi'].max(), 100)
 ax1.plot(x_line1, p1(x_line1), "r--", linewidth=2, 
          label=f'y = {z1[0]:.3f}x + {z1[1]:.3f}')
-ax1.set_xlabel('Pertumbuhan Ekonomi (%)', fontsize=11)
-ax1.set_ylabel('Angka Stunting (%)', fontsize=11)
-ax1.set_title('Regresi Linear: Stunting vs Pertumbuhan Ekonomi', fontsize=12, fontweight='bold')
-ax1.legend(loc='upper right')
+ax1.set_xlabel('Pertumbuhan Ekonomi (%)', fontsize=12)
+ax1.set_ylabel('Angka Stunting (%)', fontsize=12)
+ax1.set_title('Regresi Linear: Stunting vs Pertumbuhan Ekonomi', fontsize=14, fontweight='bold')
+ax1.legend(loc='upper right', fontsize=11)
 ax1.grid(True, alpha=0.3)
-
-# Tambahkan R-squared
 r_squared1 = model1.rsquared
-ax1.text(0.05, 0.95, f'R² = {r_squared1:.4f}', transform=ax1.transAxes, 
-         fontsize=10, verticalalignment='top', 
+ax1.text(0.05, 0.95, f'R² = {r_squared1:.4f}\np-value = {model1.pvalues[1]:.4f}', 
+         transform=ax1.transAxes, fontsize=11, verticalalignment='top', 
          bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+plt.tight_layout()
+plt.savefig(output_dir + '1_regresi_pertumbuhan_ekonomi.png', dpi=300, bbox_inches='tight')
+plt.close()
+print("   Disimpan: 1_regresi_pertumbuhan_ekonomi.png")
 
 # 6.2 Scatter Plot dengan Garis Regresi - Tingkat Pendidikan
-ax2 = fig.add_subplot(3, 2, 2)
+fig2, ax2 = plt.subplots(figsize=(10, 7))
 ax2.scatter(df['Tingkat_Pendidikan'], df['Angka_Stunting'], 
             alpha=0.7, s=80, c='seagreen', edgecolors='white', linewidth=1)
 z2 = np.polyfit(df['Tingkat_Pendidikan'], df['Angka_Stunting'], 1)
@@ -303,19 +375,22 @@ p2 = np.poly1d(z2)
 x_line2 = np.linspace(df['Tingkat_Pendidikan'].min(), df['Tingkat_Pendidikan'].max(), 100)
 ax2.plot(x_line2, p2(x_line2), "r--", linewidth=2, 
          label=f'y = {z2[0]:.3f}x + {z2[1]:.3f}')
-ax2.set_xlabel('Tingkat Pendidikan (Tahun)', fontsize=11)
-ax2.set_ylabel('Angka Stunting (%)', fontsize=11)
-ax2.set_title('Regresi Linear: Stunting vs Tingkat Pendidikan', fontsize=12, fontweight='bold')
-ax2.legend(loc='upper right')
+ax2.set_xlabel('Tingkat Pendidikan (Tahun)', fontsize=12)
+ax2.set_ylabel('Angka Stunting (%)', fontsize=12)
+ax2.set_title('Regresi Linear: Stunting vs Tingkat Pendidikan', fontsize=14, fontweight='bold')
+ax2.legend(loc='upper right', fontsize=11)
 ax2.grid(True, alpha=0.3)
-
 r_squared2 = model2.rsquared
-ax2.text(0.05, 0.95, f'R² = {r_squared2:.4f}', transform=ax2.transAxes, 
-         fontsize=10, verticalalignment='top',
+ax2.text(0.05, 0.95, f'R² = {r_squared2:.4f}\np-value = {model2.pvalues[1]:.4f}', 
+         transform=ax2.transAxes, fontsize=11, verticalalignment='top',
          bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+plt.tight_layout()
+plt.savefig(output_dir + '2_regresi_tingkat_pendidikan.png', dpi=300, bbox_inches='tight')
+plt.close()
+print("   Disimpan: 2_regresi_tingkat_pendidikan.png")
 
 # 6.3 Scatter Plot dengan Garis Regresi - Akses Sanitasi
-ax3 = fig.add_subplot(3, 2, 3)
+fig3, ax3 = plt.subplots(figsize=(10, 7))
 ax3.scatter(df['Akses_Sanitasi'], df['Angka_Stunting'], 
             alpha=0.7, s=80, c='coral', edgecolors='white', linewidth=1)
 z3 = np.polyfit(df['Akses_Sanitasi'], df['Angka_Stunting'], 1)
@@ -323,47 +398,55 @@ p3 = np.poly1d(z3)
 x_line3 = np.linspace(df['Akses_Sanitasi'].min(), df['Akses_Sanitasi'].max(), 100)
 ax3.plot(x_line3, p3(x_line3), "r--", linewidth=2, 
          label=f'y = {z3[0]:.3f}x + {z3[1]:.3f}')
-ax3.set_xlabel('Akses Sanitasi Layak (%)', fontsize=11)
-ax3.set_ylabel('Angka Stunting (%)', fontsize=11)
-ax3.set_title('Regresi Linear: Stunting vs Akses Sanitasi', fontsize=12, fontweight='bold')
-ax3.legend(loc='upper right')
+ax3.set_xlabel('Akses Sanitasi Layak (%)', fontsize=12)
+ax3.set_ylabel('Angka Stunting (%)', fontsize=12)
+ax3.set_title('Regresi Linear: Stunting vs Akses Sanitasi', fontsize=14, fontweight='bold')
+ax3.legend(loc='upper right', fontsize=11)
 ax3.grid(True, alpha=0.3)
-
 r_squared3 = model3.rsquared
-ax3.text(0.05, 0.95, f'R² = {r_squared3:.4f}', transform=ax3.transAxes, 
-         fontsize=10, verticalalignment='top',
+ax3.text(0.05, 0.95, f'R² = {r_squared3:.4f}\np-value = {model3.pvalues[1]:.4f}', 
+         transform=ax3.transAxes, fontsize=11, verticalalignment='top',
          bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+plt.tight_layout()
+plt.savefig(output_dir + '3_regresi_akses_sanitasi.png', dpi=300, bbox_inches='tight')
+plt.close()
+print("   Disimpan: 3_regresi_akses_sanitasi.png")
 
 # 6.4 Heatmap Korelasi
-ax4 = fig.add_subplot(3, 2, 4)
+fig4, ax4 = plt.subplots(figsize=(10, 8))
 corr_matrix = df[['Angka_Stunting', 'Pertumbuhan_Ekonomi', 
                   'Tingkat_Pendidikan', 'Akses_Sanitasi']].corr()
 sns.heatmap(corr_matrix, annot=True, cmap='RdYlBu_r', center=0,
-            fmt='.3f', linewidths=0.5, ax=ax4, vmin=-1, vmax=1)
-ax4.set_title('Matriks Korelasi', fontsize=12, fontweight='bold')
+            fmt='.3f', linewidths=0.5, ax=ax4, vmin=-1, vmax=1,
+            annot_kws={'size': 12})
+ax4.set_title('Matriks Korelasi Antar Variabel', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.savefig(output_dir + '4_heatmap_korelasi.png', dpi=300, bbox_inches='tight')
+plt.close()
+print("   Disimpan: 4_heatmap_korelasi.png")
 
 # 6.5 Boxplot berdasarkan Kategori Stunting
-ax5 = fig.add_subplot(3, 2, 5)
+fig5, ax5 = plt.subplots(figsize=(12, 7))
 df_melted = pd.melt(df, id_vars=['Kategori_Stunting'], 
                      value_vars=['Pertumbuhan_Ekonomi', 'Tingkat_Pendidikan', 'Akses_Sanitasi'],
                      var_name='Variabel', value_name='Nilai')
-
-# Normalize untuk visualisasi yang lebih baik
 for var in ['Pertumbuhan_Ekonomi', 'Tingkat_Pendidikan', 'Akses_Sanitasi']:
     mask = df_melted['Variabel'] == var
-    # Normalisasi dengan min-max scaling
     min_val = df_melted.loc[mask, 'Nilai'].min()
     max_val = df_melted.loc[mask, 'Nilai'].max()
     df_melted.loc[mask, 'Nilai'] = (df_melted.loc[mask, 'Nilai'] - min_val) / (max_val - min_val)
-
 sns.boxplot(x='Kategori_Stunting', y='Nilai', hue='Variabel', data=df_melted, ax=ax5)
-ax5.set_title('Distribusi Variabel per Kategori Stunting (Normalized)', fontsize=12, fontweight='bold')
-ax5.set_xlabel('Kategori Stunting', fontsize=11)
-ax5.set_ylabel('Nilai (Normalized)', fontsize=11)
-ax5.legend(title='Variabel', fontsize=9)
+ax5.set_title('Distribusi Variabel per Kategori Stunting (Normalized)', fontsize=14, fontweight='bold')
+ax5.set_xlabel('Kategori Stunting', fontsize=12)
+ax5.set_ylabel('Nilai (Normalized)', fontsize=12)
+ax5.legend(title='Variabel', fontsize=10)
+plt.tight_layout()
+plt.savefig(output_dir + '5_boxplot_kategori_stunting.png', dpi=300, bbox_inches='tight')
+plt.close()
+print("   Disimpan: 5_boxplot_kategori_stunting.png")
 
 # 6.6 Bar Chart - Ringkasan Korelasi
-ax6 = fig.add_subplot(3, 2, 6)
+fig6, ax6 = plt.subplots(figsize=(10, 7))
 correlations = [
     corr_matrix.loc['Angka_Stunting', 'Pertumbuhan_Ekonomi'],
     corr_matrix.loc['Angka_Stunting', 'Tingkat_Pendidikan'],
@@ -371,23 +454,21 @@ correlations = [
 ]
 variables = ['Pertumbuhan\nEkonomi', 'Tingkat\nPendidikan', 'Akses\nSanitasi']
 colors = ['steelblue' if c >= 0 else 'coral' for c in correlations]
-
 bars = ax6.bar(variables, correlations, color=colors, edgecolor='black', linewidth=1)
 ax6.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
-ax6.set_ylabel('Koefisien Korelasi (r)', fontsize=11)
-ax6.set_title('Korelasi dengan Angka Stunting', fontsize=12, fontweight='bold')
+ax6.set_ylabel('Koefisien Korelasi (r)', fontsize=12)
+ax6.set_title('Korelasi dengan Angka Stunting', fontsize=14, fontweight='bold')
 ax6.set_ylim(-1, 1)
-
-# Tambahkan nilai di atas bar
 for bar, corr in zip(bars, correlations):
     height = bar.get_height()
     ax6.text(bar.get_x() + bar.get_width()/2., height + 0.05,
-             f'{corr:.3f}', ha='center', va='bottom', fontsize=11, fontweight='bold')
-
+             f'{corr:.3f}', ha='center', va='bottom', fontsize=12, fontweight='bold')
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/hasil_analisis_visualisasi.png', dpi=300, bbox_inches='tight')
+plt.savefig(output_dir + '6_bar_korelasi_stunting.png', dpi=300, bbox_inches='tight')
+plt.close()
+print("   Disimpan: 6_bar_korelasi_stunting.png")
 
-print("\nVisualisasi telah disimpan ke: hasil_analisis_visualisasi.png")
+print("\n   >>> Semua 6 visualisasi telah disimpan sebagai file terpisah <<<")
 
 # =====================================================
 # 7. KESIMPULAN
