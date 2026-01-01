@@ -26,6 +26,9 @@ warnings.filterwarnings('ignore')
 plt.style.use('seaborn-v0_8-whitegrid')
 sns.set_palette("husl")
 
+# Tingkat signifikansi
+ALPHA = 0.05
+
 # =====================================================
 # DATA PENELITIAN
 # =====================================================
@@ -97,12 +100,12 @@ print("=" * 70)
 print("\n2.1 One-Sample T-Test")
 print("-" * 50)
 print("H0: Rata-rata angka stunting = 20%")
-print("H1: Rata-rata angka stunting ≠ 20%")
+print("H1: Rata-rata angka stunting != 20%")
 
 t_stat, p_value = ttest_1samp(df['Angka_Stunting'], 20)
 print(f"\nStatistik T     : {t_stat:.4f}")
 print(f"P-value         : {p_value:.4f}")
-print(f"Keputusan (α=0.05): {'Tolak H0' if p_value < 0.05 else 'Gagal Tolak H0'}")
+print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_value < ALPHA else 'Gagal Tolak H0'}")
 
 # 2.2 Independent Two-Sample T-Test
 # Membagi data menjadi 2 kelompok berdasarkan median pertumbuhan ekonomi
@@ -122,7 +125,7 @@ print("H1: Ada perbedaan rata-rata stunting antara kedua grup")
 t_stat2, p_value2 = ttest_ind(grup_rendah, grup_tinggi)
 print(f"\nStatistik T     : {t_stat2:.4f}")
 print(f"P-value         : {p_value2:.4f}")
-print(f"Keputusan (α=0.05): {'Tolak H0' if p_value2 < 0.05 else 'Gagal Tolak H0'}")
+print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_value2 < ALPHA else 'Gagal Tolak H0'}")
 
 # =====================================================
 # 3. UJI-F (F-TEST / LEVENE'S TEST)
@@ -138,7 +141,7 @@ print("H1: Varians kedua grup berbeda (tidak homogen)")
 f_stat, f_pvalue = levene(grup_rendah, grup_tinggi)
 print(f"\nStatistik Levene: {f_stat:.4f}")
 print(f"P-value         : {f_pvalue:.4f}")
-print(f"Keputusan (α=0.05): {'Tolak H0 - Varians tidak homogen' if f_pvalue < 0.05 else 'Gagal Tolak H0 - Varians homogen'}")
+print(f"Keputusan (alpha={ALPHA}): {'Tolak H0 - Varians tidak homogen' if f_pvalue < ALPHA else 'Gagal Tolak H0 - Varians homogen'}")
 
 # Uji F tradisional (rasio varians)
 print("\n" + "-" * 50)
@@ -185,7 +188,7 @@ grup_tinggi_pe = df[df['Kategori_Stunting'] == 'Tinggi']['Pertumbuhan_Ekonomi']
 f_stat_anova, p_anova = f_oneway(grup_rendah_pe, grup_sedang_pe, grup_tinggi_pe)
 print(f"\nStatistik F     : {f_stat_anova:.4f}")
 print(f"P-value         : {p_anova:.4f}")
-print(f"Keputusan (α=0.05): {'Tolak H0' if p_anova < 0.05 else 'Gagal Tolak H0'}")
+print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_anova < ALPHA else 'Gagal Tolak H0'}")
 
 # 4.2 One-Way ANOVA untuk Tingkat Pendidikan
 print("\n4.2 One-Way ANOVA: Tingkat Pendidikan berdasarkan Kategori Stunting")
@@ -198,7 +201,7 @@ grup_tinggi_tp = df[df['Kategori_Stunting'] == 'Tinggi']['Tingkat_Pendidikan']
 f_stat_tp, p_tp = f_oneway(grup_rendah_tp, grup_sedang_tp, grup_tinggi_tp)
 print(f"Statistik F     : {f_stat_tp:.4f}")
 print(f"P-value         : {p_tp:.4f}")
-print(f"Keputusan (α=0.05): {'Tolak H0' if p_tp < 0.05 else 'Gagal Tolak H0'}")
+print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_tp < ALPHA else 'Gagal Tolak H0'}")
 
 # 4.3 One-Way ANOVA untuk Akses Sanitasi
 print("\n4.3 One-Way ANOVA: Akses Sanitasi berdasarkan Kategori Stunting")
@@ -211,7 +214,7 @@ grup_tinggi_as = df[df['Kategori_Stunting'] == 'Tinggi']['Akses_Sanitasi']
 f_stat_as, p_as = f_oneway(grup_rendah_as, grup_sedang_as, grup_tinggi_as)
 print(f"Statistik F     : {f_stat_as:.4f}")
 print(f"P-value         : {p_as:.4f}")
-print(f"Keputusan (α=0.05): {'Tolak H0' if p_as < 0.05 else 'Gagal Tolak H0'}")
+print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_as < ALPHA else 'Gagal Tolak H0'}")
 
 # ANOVA Table menggunakan statsmodels
 print("\n4.4 Tabel ANOVA Lengkap (dengan statsmodels)")
@@ -382,7 +385,7 @@ for bar, corr in zip(bars, correlations):
              f'{corr:.3f}', ha='center', va='bottom', fontsize=11, fontweight='bold')
 
 plt.tight_layout()
-plt.savefig('c:/Coding/Data Statistika/hasil_analisis_visualisasi.png', dpi=300, bbox_inches='tight')
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/hasil_analisis_visualisasi.png', dpi=300, bbox_inches='tight')
 
 print("\nVisualisasi telah disimpan ke: hasil_analisis_visualisasi.png")
 
@@ -393,18 +396,18 @@ print("\n" + "=" * 70)
 print("7. KESIMPULAN ANALISIS")
 print("=" * 70)
 
-print("\n📊 Korelasi dengan Angka Stunting:")
+print("\nKorelasi dengan Angka Stunting:")
 print(f"   - Pertumbuhan Ekonomi : r = {corr_matrix.loc['Angka_Stunting', 'Pertumbuhan_Ekonomi']:.4f}")
 print(f"   - Tingkat Pendidikan  : r = {corr_matrix.loc['Angka_Stunting', 'Tingkat_Pendidikan']:.4f}")
 print(f"   - Akses Sanitasi      : r = {corr_matrix.loc['Angka_Stunting', 'Akses_Sanitasi']:.4f}")
 
-print("\n📈 R-squared Regresi Sederhana:")
-print(f"   - Stunting ~ Pertumbuhan Ekonomi : R² = {model1.rsquared:.4f}")
-print(f"   - Stunting ~ Tingkat Pendidikan  : R² = {model2.rsquared:.4f}")
-print(f"   - Stunting ~ Akses Sanitasi      : R² = {model3.rsquared:.4f}")
+print("\nR-squared Regresi Sederhana:")
+print(f"   - Stunting ~ Pertumbuhan Ekonomi : R-squared = {model1.rsquared:.4f}")
+print(f"   - Stunting ~ Tingkat Pendidikan  : R-squared = {model2.rsquared:.4f}")
+print(f"   - Stunting ~ Akses Sanitasi      : R-squared = {model3.rsquared:.4f}")
 
-print(f"\n📉 R-squared Regresi Berganda: R² = {model_multi.rsquared:.4f}")
-print(f"   Adjusted R² = {model_multi.rsquared_adj:.4f}")
+print(f"\nR-squared Regresi Berganda: R-squared = {model_multi.rsquared:.4f}")
+print(f"   Adjusted R-squared = {model_multi.rsquared_adj:.4f}")
 
 print("\n" + "=" * 70)
 print("ANALISIS SELESAI!")
