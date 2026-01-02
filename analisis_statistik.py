@@ -1,495 +1,542 @@
 """
-Analisis Statistik Data Penelitian Per Provinsi 2023
-=====================================================
-Script ini melakukan:
-1. Uji-T (T-Test)
-2. Uji-F (F-Test)
-3. ANOVA
-4. Regresi Linear dengan Visualisasi
+Analisis Statistik: Uji Simultan (Uji F) dan Uji Parsial (Uji t)
+================================================================
+Data: Pengaruh Ekonomi (X1), Pendidikan (X2), dan Sanitasi (X3) terhadap Stunting (Y)
+
+Rumus yang digunakan:
+---------------------
+1. Uji F (Simultan):
+   F = (R² / k) / ((1 - R²) / (n - k - 1))
+   
+   Dimana:
+   - R² = Koefisien determinasi
+   - k  = Jumlah variabel independen
+   - n  = Jumlah sampel
+   
+2. Uji t (Parsial):
+   t = βi / SE(βi)
+   
+   Dimana:
+   - βi     = Koefisien regresi variabel ke-i
+   - SE(βi) = Standard error koefisien ke-i
 """
 
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend
-import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy import stats
-from scipy.stats import f_oneway, ttest_ind, ttest_1samp, levene, shapiro
-import statsmodels.api as sm
-from statsmodels.formula.api import ols
-from statsmodels.stats.anova import anova_lm
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-from statsmodels.stats.diagnostic import het_breuschpagan
-import warnings
-warnings.filterwarnings('ignore')
+from io import StringIO
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
-# Set style untuk visualisasi
-plt.style.use('seaborn-v0_8-whitegrid')
-sns.set_palette("husl")
+# ============================================================
+# DATA
+# ============================================================
+data_csv = """No,Provinsi,Stunting_Y,Ekonomi_X1,Pendidikan_X2,Sanitasi_X3
+1,Aceh,29.4,4.23,9.55,78.85
+2,Sumatera Utara,18.9,5.01,9.82,84.18
+3,Sumatera Barat,23.6,4.62,9.28,70.97
+4,Riau,13.6,4.21,9.32,84.58
+5,Jambi,13.5,4.67,8.81,83.04
+6,Sumatera Selatan,20.3,5.08,8.5,80.54
+7,Bengkulu,20.2,4.28,9.03,80.28
+8,Lampung,14.9,4.55,8.29,84.58
+9,Kep. Bangka Belitung,20.6,4.38,8.25,93.21
+10,Kepulauan Riau,16.8,5.16,10.41,91.1
+11,DKI Jakarta,17.6,4.96,11.45,93.5
+12,Jawa Barat,21.7,5.0,8.83,74.88
+13,Jawa Tengah,20.7,4.97,8.01,85.2
+14,DI Yogyakarta,18.0,5.07,9.83,96.42
+15,Jawa Timur,17.7,4.95,8.11,83.72
+16,Banten,24.0,4.81,9.15,86.41
+17,Bali,7.2,5.71,9.45,95.7
+18,Nusa Tenggara Barat,24.6,1.8,7.74,85.11
+19,Nusa Tenggara Timur,37.9,3.47,7.82,75.67
+20,Kalimantan Barat,24.5,4.46,7.71,79.89
+21,Kalimantan Tengah,23.5,4.14,8.73,76.31
+22,Kalimantan Selatan,24.7,4.84,8.55,82.89
+23,Kalimantan Timur,22.9,6.22,9.99,91.21
+24,Kalimantan Utara,17.4,4.94,9.34,84.22
+25,Sulawesi Utara,21.3,5.48,9.77,85.91
+26,Sulawesi Tengah,27.2,11.91,8.96,75.8
+27,Sulawesi Selatan,27.4,4.51,8.76,93.69
+28,Sulawesi Tenggara,30.0,5.35,9.31,88.99
+29,Gorontalo,26.9,4.5,8.1,81.72
+30,Sulawesi Barat,30.3,5.23,8.13,80.73
+31,Maluku,28.4,5.21,10.2,78.17
+32,Maluku Utara,23.7,20.49,9.26,80.64
+33,Papua,28.6,5.18,7.15,43.0
+34,Papua Barat,24.8,4.22,7.93,76.3"""
 
-# Tingkat signifikansi
-ALPHA = 0.05
+# Load data
+df = pd.read_csv(StringIO(data_csv))
 
-# =====================================================
-# DATA PENELITIAN
-# =====================================================
-data = {
-    'No': list(range(1, 35)),
-    'Provinsi': [
-        'Aceh', 'Sumatera Utara', 'Sumatera Barat', 'Riau', 'Jambi',
-        'Sumatera Selatan', 'Bengkulu', 'Lampung', 'Kep. Bangka Belitung',
-        'Kepulauan Riau', 'DKI Jakarta', 'Jawa Barat', 'Jawa Tengah',
-        'DI Yogyakarta', 'Jawa Timur', 'Banten', 'Bali', 'Nusa Tenggara Barat',
-        'Nusa Tenggara Timur', 'Kalimantan Barat', 'Kalimantan Tengah',
-        'Kalimantan Selatan', 'Kalimantan Timur', 'Kalimantan Utara',
-        'Sulawesi Utara', 'Sulawesi Tengah', 'Sulawesi Selatan',
-        'Sulawesi Tenggara', 'Gorontalo', 'Sulawesi Barat', 'Maluku',
-        'Maluku Utara', 'Papua', 'Papua Barat'
-    ],
-    'Angka_Stunting': [
-        29.4, 18.9, 23.6, 13.6, 13.5, 20.3, 20.2, 14.9, 20.6, 16.8,
-        17.6, 21.7, 20.7, 18.0, 17.7, 24.0, 7.2, 24.6, 37.9, 24.5,
-        23.5, 24.7, 22.9, 17.4, 21.3, 27.2, 27.4, 30.0, 26.9, 30.3,
-        28.4, 23.7, 28.6, 24.8
-    ],
-    'Pertumbuhan_Ekonomi': [
-        4.23, 5.01, 4.62, 4.21, 4.67, 5.08, 4.28, 4.55, 4.38, 5.16,
-        4.96, 5.00, 4.97, 5.07, 4.95, 4.81, 5.71, 1.80, 3.47, 4.46,
-        4.14, 4.84, 6.22, 4.94, 5.48, 11.91, 4.51, 5.35, 4.50, 5.23,
-        5.21, 20.49, 5.18, 4.22
-    ],
-    'Tingkat_Pendidikan': [
-        9.55, 9.82, 9.28, 9.32, 8.81, 8.50, 9.03, 8.29, 8.25, 10.41,
-        11.45, 8.83, 8.01, 9.83, 8.11, 9.15, 9.45, 7.74, 7.82, 7.71,
-        8.73, 8.55, 9.99, 9.34, 9.77, 8.96, 8.76, 9.31, 8.10, 8.13,
-        10.20, 9.26, 7.15, 7.93
-    ],
-    'Akses_Sanitasi': [
-        78.85, 84.18, 70.97, 84.58, 83.04, 80.54, 80.28, 84.58, 93.21,
-        91.10, 93.50, 74.88, 85.20, 96.42, 83.72, 86.41, 95.70, 85.11,
-        75.67, 79.89, 76.31, 82.89, 91.21, 84.22, 85.91, 75.80, 93.69,
-        88.99, 81.72, 80.73, 78.17, 80.64, 43.00, 76.30
-    ]
-}
+# Variabel
+Y = df['Stunting_Y'].values  # Variabel Dependen
+X1 = df['Ekonomi_X1'].values  # Variabel Independen 1 (Ekonomi)
+# X2 = df['Pendidikan_X2'].values  # Variabel Independen 2 (DIHAPUS)
+X3 = df['Sanitasi_X3'].values  # Variabel Independen 2 (Sanitasi)
 
-df = pd.DataFrame(data)
+# Matriks X dengan konstanta (intercept)
+n = len(Y)  # Jumlah sampel
+k = 2  # Jumlah variabel independen (Ekonomi dan Sanitasi)
+X = np.column_stack([np.ones(n), X1, X3])  # Matriks desain [1, X1, X3]
+
+
+# ============================================================
+# FUNGSI PERHITUNGAN MANUAL
+# ============================================================
+
+def hitung_koefisien_regresi(X, Y):
+    """
+    Menghitung koefisien regresi menggunakan metode OLS (Ordinary Least Squares)
+    Rumus: β = (X'X)^(-1) X'Y
+    """
+    XtX = np.dot(X.T, X)  # X transpose * X
+    XtX_inv = np.linalg.inv(XtX)  # Inverse dari X'X
+    XtY = np.dot(X.T, Y)  # X transpose * Y
+    beta = np.dot(XtX_inv, XtY)  # Koefisien regresi
+    return beta, XtX_inv
+
+
+def hitung_r_squared(Y, Y_pred):
+    """
+    Menghitung R² (Koefisien Determinasi)
+    Rumus: R² = SSR / SST = 1 - (SSE / SST)
+    
+    Dimana:
+    - SST (Total Sum of Squares) = Σ(Yi - Ȳ)²
+    - SSR (Regression Sum of Squares) = Σ(Ŷi - Ȳ)²
+    - SSE (Error Sum of Squares) = Σ(Yi - Ŷi)²
+    """
+    Y_mean = np.mean(Y)
+    SST = np.sum((Y - Y_mean) ** 2)  # Total Sum of Squares
+    SSE = np.sum((Y - Y_pred) ** 2)  # Error Sum of Squares
+    SSR = SST - SSE  # Regression Sum of Squares
+    R_squared = SSR / SST
+    return R_squared, SST, SSR, SSE
+
+
+def uji_f_simultan(R_squared, n, k, SSR, SSE):
+    """
+    UJI F (SIMULTAN)
+    ================
+    Menguji signifikansi model regresi secara keseluruhan.
+    
+    Hipotesis:
+    - H0: β1 = β2 = 0 (tidak ada pengaruh simultan)
+    - H1: Minimal satu βi ≠ 0 (ada pengaruh simultan)
+    
+    Rumus F-hitung:
+    F = (R² / k) / ((1 - R²) / (n - k - 1))
+    
+    atau secara equivalen:
+    F = (SSR / k) / (SSE / (n - k - 1)) = MSR / MSE
+    
+    Dimana:
+    - MSR = Mean Square Regression = SSR / k
+    - MSE = Mean Square Error = SSE / (n - k - 1)
+    - df1 = k (derajat kebebasan regresi)
+    - df2 = n - k - 1 (derajat kebebasan error)
+    """
+    df1 = k  # Derajat kebebasan regresi
+    df2 = n - k - 1  # Derajat kebebasan error
+    
+    # Rumus 1: Menggunakan R²
+    F_hitung_v1 = (R_squared / k) / ((1 - R_squared) / (n - k - 1))
+    
+    # Rumus 2: Menggunakan SSR dan SSE
+    MSR = SSR / df1  # Mean Square Regression
+    MSE = SSE / df2  # Mean Square Error
+    F_hitung_v2 = MSR / MSE
+    
+    # p-value
+    p_value = 1 - stats.f.cdf(F_hitung_v1, df1, df2)
+    
+    # F-tabel (α = 0.05)
+    alpha = 0.05
+    F_tabel = stats.f.ppf(1 - alpha, df1, df2)
+    
+    return F_hitung_v1, F_tabel, p_value, df1, df2, MSR, MSE
+
+
+def uji_t_parsial(beta, XtX_inv, MSE, n, k):
+    """
+    UJI t (PARSIAL)
+    ===============
+    Menguji signifikansi masing-masing koefisien regresi secara individu.
+    
+    Hipotesis (untuk setiap variabel):
+    - H0: βi = 0 (variabel Xi tidak berpengaruh signifikan)
+    - H1: βi ≠ 0 (variabel Xi berpengaruh signifikan)
+    
+    Rumus t-hitung:
+    t = βi / SE(βi)
+    
+    Dimana:
+    - SE(βi) = √(MSE × Cii)
+    - Cii = Elemen diagonal ke-i dari matriks (X'X)^(-1)
+    - MSE = Mean Square Error
+    
+    Derajat Kebebasan: df = n - k - 1
+    """
+    df = n - k - 1  # Derajat kebebasan
+    
+    # Standard Error untuk setiap koefisien
+    # SE(βi) = √(MSE × diagonal(X'X)^(-1))
+    var_beta = MSE * np.diag(XtX_inv)  # Variance dari koefisien
+    SE_beta = np.sqrt(var_beta)  # Standard Error
+    
+    # t-hitung untuk setiap koefisien
+    t_hitung = beta / SE_beta
+    
+    # p-value (two-tailed test)
+    p_values = 2 * (1 - stats.t.cdf(np.abs(t_hitung), df))
+    
+    # t-tabel (α = 0.05, two-tailed)
+    alpha = 0.05
+    t_tabel = stats.t.ppf(1 - alpha/2, df)
+    
+    return t_hitung, t_tabel, p_values, SE_beta, df
+
+
+# ============================================================
+# EKSEKUSI ANALISIS
+# ============================================================
 
 print("=" * 70)
-print("ANALISIS STATISTIK DATA PENELITIAN PER PROVINSI 2023")
+print("ANALISIS REGRESI LINEAR BERGANDA")
+print("Pengaruh Ekonomi dan Sanitasi terhadap Stunting")
+print("(Tanpa Variabel Pendidikan)")
 print("=" * 70)
 
-# =====================================================
-# 1. STATISTIK DESKRIPTIF
-# =====================================================
+# 1. Hitung koefisien regresi
+beta, XtX_inv = hitung_koefisien_regresi(X, Y)
+Y_pred = np.dot(X, beta)  # Nilai prediksi
+
+print("\n📊 PERSAMAAN REGRESI:")
+print("-" * 50)
+print(f"Y = {beta[0]:.4f} + ({beta[1]:.4f})X1 + ({beta[2]:.4f})X2")
+print(f"\nDimana:")
+print(f"  Y  = Stunting")
+print(f"  X1 = Ekonomi  (β1 = {beta[1]:.4f})")
+print(f"  X2 = Sanitasi (β2 = {beta[2]:.4f})")
+
+# 2. Hitung R²
+R_squared, SST, SSR, SSE = hitung_r_squared(Y, Y_pred)
+R_squared_adj = 1 - ((1 - R_squared) * (n - 1) / (n - k - 1))
+
+print(f"\n📈 KOEFISIEN DETERMINASI:")
+print("-" * 50)
+print(f"R²           = {R_squared:.4f} ({R_squared*100:.2f}%)")
+print(f"R² Adjusted  = {R_squared_adj:.4f} ({R_squared_adj*100:.2f}%)")
+print(f"\nArtinya: {R_squared*100:.2f}% variasi Stunting dapat dijelaskan")
+print(f"oleh variabel Ekonomi dan Sanitasi.")
+
+# 3. UJI F (SIMULTAN)
+F_hitung, F_tabel, p_value_F, df1, df2, MSR, MSE = uji_f_simultan(R_squared, n, k, SSR, SSE)
+
 print("\n" + "=" * 70)
-print("1. STATISTIK DESKRIPTIF")
+print("📋 UJI SIMULTAN (UJI F)")
 print("=" * 70)
+print("""
+RUMUS UJI F:
+┌─────────────────────────────────────────────────────────────────┐
+│                      R² / k                                     │
+│  F-hitung = ─────────────────────────                           │
+│              (1 - R²) / (n - k - 1)                             │
+│                                                                 │
+│  Atau equivalen:                                                │
+│                                                                 │
+│              MSR     SSR / k                                    │
+│  F-hitung = ───── = ──────────────                              │
+│              MSE     SSE / (n-k-1)                              │
+└─────────────────────────────────────────────────────────────────┘
 
-stats_desc = df[['Angka_Stunting', 'Pertumbuhan_Ekonomi', 
-                  'Tingkat_Pendidikan', 'Akses_Sanitasi']].describe()
-print(stats_desc.round(3))
+HIPOTESIS:
+- H0: β1 = β2 = β3 = 0 (Tidak ada pengaruh simultan)
+- H1: Minimal satu βi ≠ 0 (Ada pengaruh simultan)
+""")
 
-# =====================================================
-# 2. UJI-T (T-TEST)
-# =====================================================
-print("\n" + "=" * 70)
-print("2. UJI-T (T-TEST)")
-print("=" * 70)
-
-# 2.1 One-Sample T-Test
-# Menguji apakah rata-rata stunting berbeda signifikan dari nilai tertentu (misal: 20%)
-print("\n2.1 One-Sample T-Test")
+print(f"PERHITUNGAN:")
 print("-" * 50)
-print("H0: Rata-rata angka stunting = 20%")
-print("H1: Rata-rata angka stunting != 20%")
+print(f"n (jumlah sampel)       = {n}")
+print(f"k (variabel independen) = {k}")
+print(f"df1 (regresi)           = k = {df1}")
+print(f"df2 (error)             = n - k - 1 = {df2}")
+print(f"\nSSR (Sum of Squares Regression) = {SSR:.4f}")
+print(f"SSE (Sum of Squares Error)      = {SSE:.4f}")
+print(f"SST (Sum of Squares Total)      = {SST:.4f}")
+print(f"\nMSR (Mean Square Regression)    = SSR/df1 = {MSR:.4f}")
+print(f"MSE (Mean Square Error)         = SSE/df2 = {MSE:.4f}")
 
-t_stat, p_value = ttest_1samp(df['Angka_Stunting'], 20)
-print(f"\nStatistik T     : {t_stat:.4f}")
-print(f"P-value         : {p_value:.4f}")
-print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_value < ALPHA else 'Gagal Tolak H0'}")
-
-# 2.2 Independent Two-Sample T-Test
-# Membagi data menjadi 2 kelompok berdasarkan median pertumbuhan ekonomi
-print("\n2.2 Independent Two-Sample T-Test")
+print(f"\nHASIL UJI F:")
 print("-" * 50)
-median_ekonomi = df['Pertumbuhan_Ekonomi'].median()
-grup_rendah = df[df['Pertumbuhan_Ekonomi'] <= median_ekonomi]['Angka_Stunting']
-grup_tinggi = df[df['Pertumbuhan_Ekonomi'] > median_ekonomi]['Angka_Stunting']
+print(f"F-hitung  = {F_hitung:.4f}")
+print(f"F-tabel   = {F_tabel:.4f} (α = 0.05, df1 = {df1}, df2 = {df2})")
+print(f"p-value   = {p_value_F:.6f}")
 
-print(f"Median Pertumbuhan Ekonomi: {median_ekonomi:.2f}%")
-print(f"Grup Rendah (n={len(grup_rendah)}): Mean Stunting = {grup_rendah.mean():.2f}%")
-print(f"Grup Tinggi (n={len(grup_tinggi)}): Mean Stunting = {grup_tinggi.mean():.2f}%")
-
-print("\nH0: Tidak ada perbedaan rata-rata stunting antara kedua grup")
-print("H1: Ada perbedaan rata-rata stunting antara kedua grup")
-
-t_stat2, p_value2 = ttest_ind(grup_rendah, grup_tinggi)
-print(f"\nStatistik T     : {t_stat2:.4f}")
-print(f"P-value         : {p_value2:.4f}")
-print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_value2 < ALPHA else 'Gagal Tolak H0'}")
-
-# =====================================================
-# 3. UJI-F (F-TEST / LEVENE'S TEST)
-# =====================================================
-print("\n" + "=" * 70)
-print("3. UJI-F (LEVENE'S TEST - UJI HOMOGENITAS VARIANS)")
-print("=" * 70)
-
-# Uji homogenitas varians antara grup
-print("\nH0: Varians kedua grup sama (homogen)")
-print("H1: Varians kedua grup berbeda (tidak homogen)")
-
-f_stat, f_pvalue = levene(grup_rendah, grup_tinggi)
-print(f"\nStatistik Levene: {f_stat:.4f}")
-print(f"P-value         : {f_pvalue:.4f}")
-print(f"Keputusan (alpha={ALPHA}): {'Tolak H0 - Varians tidak homogen' if f_pvalue < ALPHA else 'Gagal Tolak H0 - Varians homogen'}")
-
-# Uji F tradisional (rasio varians)
-print("\n" + "-" * 50)
-print("Uji F Tradisional (Rasio Varians)")
+print(f"\nKESIMPULAN:")
 print("-" * 50)
-var1 = grup_rendah.var()
-var2 = grup_tinggi.var()
-f_ratio = var1 / var2 if var1 > var2 else var2 / var1
-df1 = len(grup_rendah) - 1
-df2 = len(grup_tinggi) - 1
-
-print(f"Varians Grup Rendah : {var1:.4f}")
-print(f"Varians Grup Tinggi : {var2:.4f}")
-print(f"F-ratio             : {f_ratio:.4f}")
-print(f"df1, df2            : {df1}, {df2}")
-
-# =====================================================
-# 4. ANOVA (ANALYSIS OF VARIANCE)
-# =====================================================
-print("\n" + "=" * 70)
-print("4. ANOVA (ANALYSIS OF VARIANCE)")
-print("=" * 70)
-
-# Membagi provinsi menjadi 3 kategori berdasarkan tingkat stunting
-df['Kategori_Stunting'] = pd.cut(df['Angka_Stunting'], 
-                                  bins=[0, 20, 25, 100], 
-                                  labels=['Rendah', 'Sedang', 'Tinggi'])
-
-print("\nKategori Stunting:")
-print(f"  - Rendah : <= 20% (n={len(df[df['Kategori_Stunting']=='Rendah'])})")
-print(f"  - Sedang : 20-25% (n={len(df[df['Kategori_Stunting']=='Sedang'])})")
-print(f"  - Tinggi : > 25%  (n={len(df[df['Kategori_Stunting']=='Tinggi'])})")
-
-# 4.1 One-Way ANOVA untuk Pertumbuhan Ekonomi
-print("\n4.1 One-Way ANOVA: Pertumbuhan Ekonomi berdasarkan Kategori Stunting")
-print("-" * 50)
-print("H0: Tidak ada perbedaan rata-rata pertumbuhan ekonomi antar kategori")
-print("H1: Ada perbedaan rata-rata pertumbuhan ekonomi antar kategori")
-
-grup_rendah_pe = df[df['Kategori_Stunting'] == 'Rendah']['Pertumbuhan_Ekonomi']
-grup_sedang_pe = df[df['Kategori_Stunting'] == 'Sedang']['Pertumbuhan_Ekonomi']
-grup_tinggi_pe = df[df['Kategori_Stunting'] == 'Tinggi']['Pertumbuhan_Ekonomi']
-
-f_stat_anova, p_anova = f_oneway(grup_rendah_pe, grup_sedang_pe, grup_tinggi_pe)
-print(f"\nStatistik F     : {f_stat_anova:.4f}")
-print(f"P-value         : {p_anova:.4f}")
-print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_anova < ALPHA else 'Gagal Tolak H0'}")
-
-# 4.2 One-Way ANOVA untuk Tingkat Pendidikan
-print("\n4.2 One-Way ANOVA: Tingkat Pendidikan berdasarkan Kategori Stunting")
-print("-" * 50)
-
-grup_rendah_tp = df[df['Kategori_Stunting'] == 'Rendah']['Tingkat_Pendidikan']
-grup_sedang_tp = df[df['Kategori_Stunting'] == 'Sedang']['Tingkat_Pendidikan']
-grup_tinggi_tp = df[df['Kategori_Stunting'] == 'Tinggi']['Tingkat_Pendidikan']
-
-f_stat_tp, p_tp = f_oneway(grup_rendah_tp, grup_sedang_tp, grup_tinggi_tp)
-print(f"Statistik F     : {f_stat_tp:.4f}")
-print(f"P-value         : {p_tp:.4f}")
-print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_tp < ALPHA else 'Gagal Tolak H0'}")
-
-# 4.3 One-Way ANOVA untuk Akses Sanitasi
-print("\n4.3 One-Way ANOVA: Akses Sanitasi berdasarkan Kategori Stunting")
-print("-" * 50)
-
-grup_rendah_as = df[df['Kategori_Stunting'] == 'Rendah']['Akses_Sanitasi']
-grup_sedang_as = df[df['Kategori_Stunting'] == 'Sedang']['Akses_Sanitasi']
-grup_tinggi_as = df[df['Kategori_Stunting'] == 'Tinggi']['Akses_Sanitasi']
-
-f_stat_as, p_as = f_oneway(grup_rendah_as, grup_sedang_as, grup_tinggi_as)
-print(f"Statistik F     : {f_stat_as:.4f}")
-print(f"P-value         : {p_as:.4f}")
-print(f"Keputusan (alpha={ALPHA}): {'Tolak H0' if p_as < ALPHA else 'Gagal Tolak H0'}")
-
-# ANOVA Table menggunakan statsmodels
-print("\n4.4 Tabel ANOVA Lengkap (dengan statsmodels)")
-print("-" * 50)
-model = ols('Angka_Stunting ~ C(Kategori_Stunting)', data=df).fit()
-anova_table = anova_lm(model, typ=2)
-print(anova_table.round(4))
-
-# =====================================================
-# 5. REGRESI LINEAR
-# =====================================================
-print("\n" + "=" * 70)
-print("5. ANALISIS REGRESI LINEAR")
-print("=" * 70)
-
-# 5.1 Regresi Sederhana: Stunting vs Pertumbuhan Ekonomi
-print("\n5.1 Regresi Linear Sederhana: Stunting ~ Pertumbuhan Ekonomi")
-print("-" * 50)
-
-X1 = sm.add_constant(df['Pertumbuhan_Ekonomi'])
-model1 = sm.OLS(df['Angka_Stunting'], X1).fit()
-print(model1.summary())
-
-# 5.2 Regresi Sederhana: Stunting vs Tingkat Pendidikan
-print("\n5.2 Regresi Linear Sederhana: Stunting ~ Tingkat Pendidikan")
-print("-" * 50)
-
-X2 = sm.add_constant(df['Tingkat_Pendidikan'])
-model2 = sm.OLS(df['Angka_Stunting'], X2).fit()
-print(model2.summary())
-
-# 5.3 Regresi Sederhana: Stunting vs Akses Sanitasi
-print("\n5.3 Regresi Linear Sederhana: Stunting ~ Akses Sanitasi")
-print("-" * 50)
-
-X3 = sm.add_constant(df['Akses_Sanitasi'])
-model3 = sm.OLS(df['Angka_Stunting'], X3).fit()
-print(model3.summary())
-
-# 5.4 Regresi Berganda
-print("\n5.4 Regresi Linear Berganda: Stunting ~ Semua Variabel")
-print("-" * 50)
-
-X_multi = df[['Pertumbuhan_Ekonomi', 'Tingkat_Pendidikan', 'Akses_Sanitasi']]
-X_multi = sm.add_constant(X_multi)
-model_multi = sm.OLS(df['Angka_Stunting'], X_multi).fit()
-print(model_multi.summary())
-
-# =====================================================
-# 5.5 UJI ASUMSI KLASIK REGRESI
-# =====================================================
-print("\n" + "=" * 70)
-print("5.5 UJI ASUMSI KLASIK REGRESI")
-print("=" * 70)
-
-# 5.5.1 Uji Multikolinearitas (VIF)
-print("\n5.5.1 Uji Multikolinearitas (VIF - Variance Inflation Factor)")
-print("-" * 50)
-print("Kriteria: VIF < 10 = Tidak ada multikolinearitas")
-print("          VIF >= 10 = Ada multikolinearitas")
-
-X_vif = df[['Pertumbuhan_Ekonomi', 'Tingkat_Pendidikan', 'Akses_Sanitasi']]
-X_vif = sm.add_constant(X_vif)
-
-vif_data = pd.DataFrame()
-vif_data['Variabel'] = X_vif.columns[1:]
-vif_data['VIF'] = [variance_inflation_factor(X_vif.values, i+1) for i in range(len(X_vif.columns)-1)]
-
-print("\nHasil Uji VIF:")
-for idx, row in vif_data.iterrows():
-    status = "OK (Tidak ada multikolinearitas)" if row['VIF'] < 10 else "MASALAH (Ada multikolinearitas)"
-    print(f"   {row['Variabel']:25} : VIF = {row['VIF']:.4f} -> {status}")
-
-# 5.5.2 Uji Normalitas Residual (Shapiro-Wilk)
-print("\n5.5.2 Uji Normalitas Residual (Shapiro-Wilk)")
-print("-" * 50)
-print("H0: Residual berdistribusi normal")
-print("H1: Residual tidak berdistribusi normal")
-
-residuals = model_multi.resid
-shapiro_stat, shapiro_pvalue = shapiro(residuals)
-
-print(f"\nStatistik Shapiro-Wilk : {shapiro_stat:.4f}")
-print(f"P-value                : {shapiro_pvalue:.4f}")
-print(f"Keputusan (alpha={ALPHA}): {'Tolak H0 - Residual TIDAK normal' if shapiro_pvalue < ALPHA else 'Gagal Tolak H0 - Residual NORMAL'}")
-
-# 5.5.3 Uji Heteroskedastisitas (Breusch-Pagan)
-print("\n5.5.3 Uji Heteroskedastisitas (Breusch-Pagan)")
-print("-" * 50)
-print("H0: Tidak ada heteroskedastisitas (homoskedastis)")
-print("H1: Ada heteroskedastisitas")
-
-bp_test = het_breuschpagan(model_multi.resid, model_multi.model.exog)
-bp_stat = bp_test[0]
-bp_pvalue = bp_test[1]
-
-print(f"\nStatistik Breusch-Pagan : {bp_stat:.4f}")
-print(f"P-value                 : {bp_pvalue:.4f}")
-print(f"Keputusan (alpha={ALPHA}): {'Tolak H0 - Ada HETEROSKEDASTISITAS' if bp_pvalue < ALPHA else 'Gagal Tolak H0 - HOMOSKEDASTIS (OK)'}")
-
-# Ringkasan Asumsi Klasik
-print("\n" + "-" * 50)
-print("RINGKASAN UJI ASUMSI KLASIK:")
-print("-" * 50)
-vif_ok = all(vif_data['VIF'] < 10)
-normal_ok = shapiro_pvalue >= ALPHA
-homo_ok = bp_pvalue >= ALPHA
-
-print(f"   1. Multikolinearitas  : {'TERPENUHI (VIF < 10)' if vif_ok else 'TIDAK TERPENUHI (VIF >= 10)'}")
-print(f"   2. Normalitas Residual: {'TERPENUHI (p >= 0.05)' if normal_ok else 'TIDAK TERPENUHI (p < 0.05)'}")
-print(f"   3. Homoskedastisitas  : {'TERPENUHI (p >= 0.05)' if homo_ok else 'TIDAK TERPENUHI (p < 0.05)'}")
-
-if vif_ok and normal_ok and homo_ok:
-    print("\n   >>> SEMUA ASUMSI KLASIK TERPENUHI - Model regresi VALID <<<")
+if F_hitung > F_tabel:
+    print(f"✅ F-hitung ({F_hitung:.4f}) > F-tabel ({F_tabel:.4f})")
+    print(f"✅ p-value ({p_value_F:.6f}) < α (0.05)")
+    print(f"\n🎯 KEPUTUSAN: TOLAK H0")
+    print(f"   Artinya: Ekonomi dan Sanitasi secara SIMULTAN")
+    print(f"   berpengaruh signifikan terhadap Stunting.")
 else:
-    print("\n   >>> PERHATIAN: Ada asumsi yang tidak terpenuhi <<<")
+    print(f"❌ F-hitung ({F_hitung:.4f}) ≤ F-tabel ({F_tabel:.4f})")
+    print(f"❌ p-value ({p_value_F:.6f}) ≥ α (0.05)")
+    print(f"\n🎯 KEPUTUSAN: GAGAL TOLAK H0")
+    print(f"   Artinya: Ekonomi dan Sanitasi secara SIMULTAN")
+    print(f"   TIDAK berpengaruh signifikan terhadap Stunting.")
 
-# =====================================================
-# 6. VISUALISASI (MASING-MASING FILE TERPISAH)
-# =====================================================
+# 4. UJI t (PARSIAL)
+t_hitung, t_tabel, p_values_t, SE_beta, df_t = uji_t_parsial(beta, XtX_inv, MSE, n, k)
+var_names = ['Konstanta', 'Ekonomi (X1)', 'Sanitasi (X2)']
+
 print("\n" + "=" * 70)
-print("6. MEMBUAT VISUALISASI...")
+print("📋 UJI PARSIAL (UJI t)")
+print("=" * 70)
+print("""
+RUMUS UJI t:
+┌─────────────────────────────────────────────────────────────────┐
+│                βi                                               │
+│  t-hitung = ────────                                            │
+│              SE(βi)                                             │
+│                                                                 │
+│  Dimana:                                                        │
+│  SE(βi) = √(MSE × Cii)                                          │
+│  Cii    = Elemen diagonal ke-i dari matriks (X'X)⁻¹             │
+└─────────────────────────────────────────────────────────────────┘
+
+HIPOTESIS (untuk setiap variabel):
+- H0: βi = 0 (Variabel Xi tidak berpengaruh signifikan)
+- H1: βi ≠ 0 (Variabel Xi berpengaruh signifikan)
+
+Derajat Kebebasan: df = n - k - 1 = """ + str(df_t) + """
+t-tabel (α = 0.05, two-tailed) = """ + f"{t_tabel:.4f}" + """
+""")
+
+print("HASIL UJI t UNTUK SETIAP VARIABEL:")
+print("-" * 70)
+print(f"{'Variabel':<20} {'Koefisien':>12} {'SE':>12} {'t-hitung':>12} {'p-value':>12}")
+print("-" * 70)
+
+for i in range(len(beta)):
+    print(f"{var_names[i]:<20} {beta[i]:>12.4f} {SE_beta[i]:>12.4f} {t_hitung[i]:>12.4f} {p_values_t[i]:>12.6f}")
+
+print("\n" + "=" * 70)
+print("KESIMPULAN UJI t (PARSIAL):")
 print("=" * 70)
 
-output_dir = 'D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/'
+alpha = 0.05
+for i in range(1, len(beta)):  # Skip konstanta
+    print(f"\n📌 {var_names[i]}:")
+    print(f"   t-hitung = {t_hitung[i]:.4f}")
+    print(f"   t-tabel  = ±{t_tabel:.4f}")
+    print(f"   p-value  = {p_values_t[i]:.6f}")
+    
+    if abs(t_hitung[i]) > t_tabel and p_values_t[i] < alpha:
+        print(f"   ✅ |t-hitung| > t-tabel DAN p-value < 0.05")
+        print(f"   🎯 KEPUTUSAN: TOLAK H0")
+        print(f"   📊 Artinya: {var_names[i]} berpengaruh SIGNIFIKAN terhadap Stunting")
+    else:
+        print(f"   ❌ |t-hitung| ≤ t-tabel ATAU p-value ≥ 0.05")
+        print(f"   🎯 KEPUTUSAN: GAGAL TOLAK H0")
+        print(f"   📊 Artinya: {var_names[i]} TIDAK berpengaruh signifikan terhadap Stunting")
 
-# 6.1 Scatter Plot dengan Garis Regresi - Pertumbuhan Ekonomi
-fig1, ax1 = plt.subplots(figsize=(10, 7))
-ax1.scatter(df['Pertumbuhan_Ekonomi'], df['Angka_Stunting'], 
-            alpha=0.7, s=80, c='steelblue', edgecolors='white', linewidth=1)
-z1 = np.polyfit(df['Pertumbuhan_Ekonomi'], df['Angka_Stunting'], 1)
+# 5. TABEL ANOVA
+print("\n" + "=" * 70)
+print("📋 TABEL ANOVA")
+print("=" * 70)
+print(f"\n{'Sumber Variasi':<20} {'df':>8} {'SS':>15} {'MS':>15} {'F':>12} {'p-value':>12}")
+print("-" * 82)
+print(f"{'Regresi':<20} {df1:>8} {SSR:>15.4f} {MSR:>15.4f} {F_hitung:>12.4f} {p_value_F:>12.6f}")
+print(f"{'Error':<20} {df2:>8} {SSE:>15.4f} {MSE:>15.4f}")
+print(f"{'Total':<20} {n-1:>8} {SST:>15.4f}")
+print("-" * 82)
+
+print("\n" + "=" * 70)
+print("📋 RINGKASAN HASIL ANALISIS")
+print("=" * 70)
+print(f"""
+┌─────────────────────────────────────────────────────────────────┐
+│ Model Regresi (Tanpa Pendidikan):                               │
+│ Stunting = {beta[0]:.2f} + ({beta[1]:.2f})Ekonomi + ({beta[2]:.2f})Sanitasi        │
+│                                                                 │
+│ R² = {R_squared:.4f} ({R_squared*100:.2f}% variasi dapat dijelaskan)           │
+│                                                                 │
+│ Uji F (Simultan):                                               │
+│   F-hitung = {F_hitung:.4f} > F-tabel = {F_tabel:.4f}                       │
+│   → Model {'SIGNIFIKAN' if F_hitung > F_tabel else 'TIDAK SIGNIFIKAN'}                                            │
+│                                                                 │
+│ Uji t (Parsial):                                                │
+│   - Ekonomi:  t = {t_hitung[1]:>7.4f}, p = {p_values_t[1]:.4f}                       │
+│   - Sanitasi: t = {t_hitung[2]:>7.4f}, p = {p_values_t[2]:.4f}                       │
+└─────────────────────────────────────────────────────────────────┘
+""")
+
+print("=" * 70)
+print("Analisis Selesai!")
+print("=" * 70)
+
+# ============================================================
+# VISUALISASI
+# ============================================================
+
+print("\n🎨 Membuat visualisasi...")
+
+# Set style
+plt.style.use('seaborn-v0_8-whitegrid')
+plt.rcParams['font.size'] = 10
+plt.rcParams['axes.titlesize'] = 12
+plt.rcParams['axes.labelsize'] = 10
+plt.rcParams['figure.facecolor'] = 'white'
+
+# Buat figure dengan 2x3 subplots
+fig = plt.figure(figsize=(16, 12))
+fig.suptitle('VISUALISASI ANALISIS REGRESI LINEAR BERGANDA\nPengaruh Ekonomi dan Sanitasi terhadap Stunting', 
+             fontsize=14, fontweight='bold', y=0.98)
+
+# ============================================================
+# 1. Scatter Plot: Ekonomi vs Stunting
+# ============================================================
+ax1 = fig.add_subplot(2, 3, 1)
+ax1.scatter(X1, Y, color='#3498db', alpha=0.7, edgecolors='white', s=80, label='Data Aktual')
+
+# Garis regresi sederhana untuk Ekonomi
+z1 = np.polyfit(X1, Y, 1)
 p1 = np.poly1d(z1)
-x_line1 = np.linspace(df['Pertumbuhan_Ekonomi'].min(), df['Pertumbuhan_Ekonomi'].max(), 100)
-ax1.plot(x_line1, p1(x_line1), "r--", linewidth=2, 
-         label=f'y = {z1[0]:.3f}x + {z1[1]:.3f}')
-ax1.set_xlabel('Pertumbuhan Ekonomi (%)', fontsize=12)
-ax1.set_ylabel('Angka Stunting (%)', fontsize=12)
-ax1.set_title('Regresi Linear: Stunting vs Pertumbuhan Ekonomi', fontsize=14, fontweight='bold')
-ax1.legend(loc='upper right', fontsize=11)
+x_line = np.linspace(X1.min(), X1.max(), 100)
+ax1.plot(x_line, p1(x_line), color='#e74c3c', linewidth=2, linestyle='--', label=f'Regresi (β={z1[0]:.3f})')
+
+ax1.set_xlabel('Ekonomi (X1)')
+ax1.set_ylabel('Stunting (Y)')
+ax1.set_title('Ekonomi vs Stunting', fontweight='bold')
+ax1.legend(loc='best', fontsize=8)
 ax1.grid(True, alpha=0.3)
-r_squared1 = model1.rsquared
-ax1.text(0.05, 0.95, f'R² = {r_squared1:.4f}\np-value = {model1.pvalues[1]:.4f}', 
-         transform=ax1.transAxes, fontsize=11, verticalalignment='top', 
-         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-plt.tight_layout()
-plt.savefig(output_dir + '1_regresi_pertumbuhan_ekonomi.png', dpi=300, bbox_inches='tight')
-plt.close()
-print("   Disimpan: 1_regresi_pertumbuhan_ekonomi.png")
 
-# 6.2 Scatter Plot dengan Garis Regresi - Tingkat Pendidikan
-fig2, ax2 = plt.subplots(figsize=(10, 7))
-ax2.scatter(df['Tingkat_Pendidikan'], df['Angka_Stunting'], 
-            alpha=0.7, s=80, c='seagreen', edgecolors='white', linewidth=1)
-z2 = np.polyfit(df['Tingkat_Pendidikan'], df['Angka_Stunting'], 1)
+# ============================================================
+# 2. Scatter Plot: Sanitasi vs Stunting
+# ============================================================
+ax2 = fig.add_subplot(2, 3, 2)
+ax2.scatter(X3, Y, color='#2ecc71', alpha=0.7, edgecolors='white', s=80, label='Data Aktual')
+
+# Garis regresi sederhana untuk Sanitasi
+z2 = np.polyfit(X3, Y, 1)
 p2 = np.poly1d(z2)
-x_line2 = np.linspace(df['Tingkat_Pendidikan'].min(), df['Tingkat_Pendidikan'].max(), 100)
-ax2.plot(x_line2, p2(x_line2), "r--", linewidth=2, 
-         label=f'y = {z2[0]:.3f}x + {z2[1]:.3f}')
-ax2.set_xlabel('Tingkat Pendidikan (Tahun)', fontsize=12)
-ax2.set_ylabel('Angka Stunting (%)', fontsize=12)
-ax2.set_title('Regresi Linear: Stunting vs Tingkat Pendidikan', fontsize=14, fontweight='bold')
-ax2.legend(loc='upper right', fontsize=11)
+x_line2 = np.linspace(X3.min(), X3.max(), 100)
+ax2.plot(x_line2, p2(x_line2), color='#e74c3c', linewidth=2, linestyle='--', label=f'Regresi (β={z2[0]:.3f})')
+
+ax2.set_xlabel('Sanitasi (X2)')
+ax2.set_ylabel('Stunting (Y)')
+ax2.set_title('Sanitasi vs Stunting', fontweight='bold')
+ax2.legend(loc='best', fontsize=8)
 ax2.grid(True, alpha=0.3)
-r_squared2 = model2.rsquared
-ax2.text(0.05, 0.95, f'R² = {r_squared2:.4f}\np-value = {model2.pvalues[1]:.4f}', 
-         transform=ax2.transAxes, fontsize=11, verticalalignment='top',
-         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-plt.tight_layout()
-plt.savefig(output_dir + '2_regresi_tingkat_pendidikan.png', dpi=300, bbox_inches='tight')
-plt.close()
-print("   Disimpan: 2_regresi_tingkat_pendidikan.png")
 
-# 6.3 Scatter Plot dengan Garis Regresi - Akses Sanitasi
-fig3, ax3 = plt.subplots(figsize=(10, 7))
-ax3.scatter(df['Akses_Sanitasi'], df['Angka_Stunting'], 
-            alpha=0.7, s=80, c='coral', edgecolors='white', linewidth=1)
-z3 = np.polyfit(df['Akses_Sanitasi'], df['Angka_Stunting'], 1)
-p3 = np.poly1d(z3)
-x_line3 = np.linspace(df['Akses_Sanitasi'].min(), df['Akses_Sanitasi'].max(), 100)
-ax3.plot(x_line3, p3(x_line3), "r--", linewidth=2, 
-         label=f'y = {z3[0]:.3f}x + {z3[1]:.3f}')
-ax3.set_xlabel('Akses Sanitasi Layak (%)', fontsize=12)
-ax3.set_ylabel('Angka Stunting (%)', fontsize=12)
-ax3.set_title('Regresi Linear: Stunting vs Akses Sanitasi', fontsize=14, fontweight='bold')
-ax3.legend(loc='upper right', fontsize=11)
+# ============================================================
+# 3. Nilai Aktual vs Prediksi
+# ============================================================
+ax3 = fig.add_subplot(2, 3, 3)
+ax3.scatter(Y, Y_pred, color='#9b59b6', alpha=0.7, edgecolors='white', s=80)
+ax3.plot([Y.min(), Y.max()], [Y.min(), Y.max()], 'r--', linewidth=2, label='Garis Perfect Fit')
+ax3.set_xlabel('Nilai Aktual (Y)')
+ax3.set_ylabel('Nilai Prediksi (Ŷ)')
+ax3.set_title(f'Aktual vs Prediksi (R² = {R_squared:.4f})', fontweight='bold')
+ax3.legend(loc='best', fontsize=8)
 ax3.grid(True, alpha=0.3)
-r_squared3 = model3.rsquared
-ax3.text(0.05, 0.95, f'R² = {r_squared3:.4f}\np-value = {model3.pvalues[1]:.4f}', 
-         transform=ax3.transAxes, fontsize=11, verticalalignment='top',
-         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-plt.tight_layout()
-plt.savefig(output_dir + '3_regresi_akses_sanitasi.png', dpi=300, bbox_inches='tight')
-plt.close()
-print("   Disimpan: 3_regresi_akses_sanitasi.png")
 
-# 6.4 Heatmap Korelasi
-fig4, ax4 = plt.subplots(figsize=(10, 8))
-corr_matrix = df[['Angka_Stunting', 'Pertumbuhan_Ekonomi', 
-                  'Tingkat_Pendidikan', 'Akses_Sanitasi']].corr()
-sns.heatmap(corr_matrix, annot=True, cmap='RdYlBu_r', center=0,
-            fmt='.3f', linewidths=0.5, ax=ax4, vmin=-1, vmax=1,
-            annot_kws={'size': 12})
-ax4.set_title('Matriks Korelasi Antar Variabel', fontsize=14, fontweight='bold')
-plt.tight_layout()
-plt.savefig(output_dir + '4_heatmap_korelasi.png', dpi=300, bbox_inches='tight')
-plt.close()
-print("   Disimpan: 4_heatmap_korelasi.png")
+# ============================================================
+# 4. Residual Plot
+# ============================================================
+ax4 = fig.add_subplot(2, 3, 4)
+residuals = Y - Y_pred
+ax4.scatter(Y_pred, residuals, color='#e67e22', alpha=0.7, edgecolors='white', s=80)
+ax4.axhline(y=0, color='red', linestyle='--', linewidth=2)
+ax4.set_xlabel('Nilai Prediksi (Ŷ)')
+ax4.set_ylabel('Residual (Y - Ŷ)')
+ax4.set_title('Plot Residual', fontweight='bold')
+ax4.grid(True, alpha=0.3)
 
-# 6.5 Boxplot berdasarkan Kategori Stunting
-fig5, ax5 = plt.subplots(figsize=(12, 7))
-df_melted = pd.melt(df, id_vars=['Kategori_Stunting'], 
-                     value_vars=['Pertumbuhan_Ekonomi', 'Tingkat_Pendidikan', 'Akses_Sanitasi'],
-                     var_name='Variabel', value_name='Nilai')
-for var in ['Pertumbuhan_Ekonomi', 'Tingkat_Pendidikan', 'Akses_Sanitasi']:
-    mask = df_melted['Variabel'] == var
-    min_val = df_melted.loc[mask, 'Nilai'].min()
-    max_val = df_melted.loc[mask, 'Nilai'].max()
-    df_melted.loc[mask, 'Nilai'] = (df_melted.loc[mask, 'Nilai'] - min_val) / (max_val - min_val)
-sns.boxplot(x='Kategori_Stunting', y='Nilai', hue='Variabel', data=df_melted, ax=ax5)
-ax5.set_title('Distribusi Variabel per Kategori Stunting (Normalized)', fontsize=14, fontweight='bold')
-ax5.set_xlabel('Kategori Stunting', fontsize=12)
-ax5.set_ylabel('Nilai (Normalized)', fontsize=12)
-ax5.legend(title='Variabel', fontsize=10)
-plt.tight_layout()
-plt.savefig(output_dir + '5_boxplot_kategori_stunting.png', dpi=300, bbox_inches='tight')
-plt.close()
-print("   Disimpan: 5_boxplot_kategori_stunting.png")
+# ============================================================
+# 5. Perbandingan Koefisien (Bar Chart)
+# ============================================================
+ax5 = fig.add_subplot(2, 3, 5)
+koef_names = ['Konstanta', 'Ekonomi (X1)', 'Sanitasi (X2)']
+koef_values = beta
+colors = ['#95a5a6', '#3498db', '#2ecc71']
 
-# 6.6 Bar Chart - Ringkasan Korelasi
-fig6, ax6 = plt.subplots(figsize=(10, 7))
-correlations = [
-    corr_matrix.loc['Angka_Stunting', 'Pertumbuhan_Ekonomi'],
-    corr_matrix.loc['Angka_Stunting', 'Tingkat_Pendidikan'],
-    corr_matrix.loc['Angka_Stunting', 'Akses_Sanitasi']
-]
-variables = ['Pertumbuhan\nEkonomi', 'Tingkat\nPendidikan', 'Akses\nSanitasi']
-colors = ['steelblue' if c >= 0 else 'coral' for c in correlations]
-bars = ax6.bar(variables, correlations, color=colors, edgecolor='black', linewidth=1)
-ax6.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
-ax6.set_ylabel('Koefisien Korelasi (r)', fontsize=12)
-ax6.set_title('Korelasi dengan Angka Stunting', fontsize=14, fontweight='bold')
-ax6.set_ylim(-1, 1)
-for bar, corr in zip(bars, correlations):
+bars = ax5.bar(koef_names, koef_values, color=colors, edgecolor='white', linewidth=2)
+
+# Tambahkan nilai di atas bar
+for bar, val in zip(bars, koef_values):
     height = bar.get_height()
-    ax6.text(bar.get_x() + bar.get_width()/2., height + 0.05,
-             f'{corr:.3f}', ha='center', va='bottom', fontsize=12, fontweight='bold')
-plt.tight_layout()
-plt.savefig(output_dir + '6_bar_korelasi_stunting.png', dpi=300, bbox_inches='tight')
-plt.close()
-print("   Disimpan: 6_bar_korelasi_stunting.png")
+    ax5.annotate(f'{val:.4f}',
+                xy=(bar.get_x() + bar.get_width() / 2, height),
+                xytext=(0, 3),
+                textcoords="offset points",
+                ha='center', va='bottom', fontsize=9, fontweight='bold')
 
-print("\n   >>> Semua 6 visualisasi telah disimpan sebagai file terpisah <<<")
+ax5.set_ylabel('Nilai Koefisien')
+ax5.set_title('Koefisien Regresi', fontweight='bold')
+ax5.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
+ax5.grid(True, alpha=0.3, axis='y')
 
-# =====================================================
-# 7. KESIMPULAN
-# =====================================================
+# ============================================================
+# 6. Hasil Uji Statistik (Visual Summary)
+# ============================================================
+ax6 = fig.add_subplot(2, 3, 6)
+ax6.axis('off')
+
+# Buat tabel summary
+summary_text = f"""
++==================================================+
+|         RINGKASAN UJI STATISTIK                  |
++==================================================+
+|                                                  |
+|  [1] MODEL REGRESI:                              |
+|  Y = {beta[0]:.2f} + ({beta[1]:.2f})X1 + ({beta[2]:.2f})X2           |
+|                                                  |
+|  [2] KOEFISIEN DETERMINASI:                      |
+|  R^2 = {R_squared:.4f} ({R_squared*100:.2f}%)                       |
+|  R^2 Adj = {R_squared_adj:.4f} ({R_squared_adj*100:.2f}%)                   |
+|                                                  |
++==================================================+
+|  [3] UJI F (SIMULTAN):                           |
+|  F-hitung = {F_hitung:.4f}                               |
+|  F-tabel  = {F_tabel:.4f}                               |
+|  p-value  = {p_value_F:.6f}                           |
+|  Hasil: {'[v] SIGNIFIKAN' if F_hitung > F_tabel else '[x] TIDAK SIGNIFIKAN'}                         |
+|                                                  |
++==================================================+
+|  [4] UJI t (PARSIAL):                            |
+|                                                  |
+|  Ekonomi (X1):                                   |
+|    t = {t_hitung[1]:.4f}, p = {p_values_t[1]:.4f}                    |
+|    {'[x] Tidak Signifikan' if p_values_t[1] >= 0.05 else '[v] Signifikan'}                           |
+|                                                  |
+|  Sanitasi (X2):                                  |
+|    t = {t_hitung[2]:.4f}, p = {p_values_t[2]:.4f}                    |
+|    {'[x] Tidak Signifikan' if p_values_t[2] >= 0.05 else '[v] Signifikan'}                            |
+|                                                  |
++==================================================+
+"""
+
+ax6.text(0.5, 0.5, summary_text, transform=ax6.transAxes,
+         fontsize=9, verticalalignment='center', horizontalalignment='center',
+         fontfamily='monospace',
+         bbox=dict(boxstyle='round', facecolor='#f8f9fa', edgecolor='#dee2e6', linewidth=2))
+
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+# Simpan gambar
+output_path = 'visualisasi_analisis_regresi.png'
+plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor='white', edgecolor='none')
+print(f"\n✅ Visualisasi disimpan: {output_path}")
+
+# Tampilkan gambar
+plt.show()
+
 print("\n" + "=" * 70)
-print("7. KESIMPULAN ANALISIS")
-print("=" * 70)
-
-print("\nKorelasi dengan Angka Stunting:")
-print(f"   - Pertumbuhan Ekonomi : r = {corr_matrix.loc['Angka_Stunting', 'Pertumbuhan_Ekonomi']:.4f}")
-print(f"   - Tingkat Pendidikan  : r = {corr_matrix.loc['Angka_Stunting', 'Tingkat_Pendidikan']:.4f}")
-print(f"   - Akses Sanitasi      : r = {corr_matrix.loc['Angka_Stunting', 'Akses_Sanitasi']:.4f}")
-
-print("\nR-squared Regresi Sederhana:")
-print(f"   - Stunting ~ Pertumbuhan Ekonomi : R-squared = {model1.rsquared:.4f}")
-print(f"   - Stunting ~ Tingkat Pendidikan  : R-squared = {model2.rsquared:.4f}")
-print(f"   - Stunting ~ Akses Sanitasi      : R-squared = {model3.rsquared:.4f}")
-
-print(f"\nR-squared Regresi Berganda: R-squared = {model_multi.rsquared:.4f}")
-print(f"   Adjusted R-squared = {model_multi.rsquared_adj:.4f}")
-
-print("\n" + "=" * 70)
-print("ANALISIS SELESAI!")
+print("Visualisasi Selesai!")
 print("=" * 70)
