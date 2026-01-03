@@ -752,6 +752,419 @@ print(f"{'Residual':<20} {df2:>8} {SSE:>18.4f} {MSE:>15.4f}")
 print(f"{'Total':<20} {n-1:>8} {SST:>18.4f}")
 print("-" * 85)
 
+# ============================================================================
+# UJI ASUMSI KLASIK
+# ============================================================================
+print("\n" + "=" * 80)
+print("UJI ASUMSI KLASIK")
+print("=" * 80)
+
+# Residual untuk uji asumsi
+residuals = Y - Y_pred
+
+# ----------------------------------------------------------------------------
+# 1. UJI NORMALITAS RESIDUAL
+# ----------------------------------------------------------------------------
+print("\n" + "-" * 80)
+print("1. UJI NORMALITAS RESIDUAL")
+print("-" * 80)
+
+print("""
+RUMUS UJI NORMALITAS:
+=====================
+
+A. UJI SHAPIRO-WILK:
+                    (Σ ai * x(i))²
+   W = ------------------------------------
+              Σ (xi - x̄)²
+
+   Hipotesis:
+   - H0: Residual berdistribusi normal
+   - H1: Residual tidak berdistribusi normal
+
+B. UJI JARQUE-BERA:
+              n        S²      (K - 3)²
+   JB = --------- * [ ---- + ----------- ]
+           6            1         4
+
+   Dimana: S = Skewness, K = Kurtosis, n = jumlah observasi
+
+   Hipotesis:
+   - H0: Residual berdistribusi normal (Skewness=0, Kurtosis=3)
+   - H1: Residual tidak berdistribusi normal
+
+Kriteria: Tolak H0 jika p-value < alpha (0.05)
+""")
+
+# Shapiro-Wilk Test
+shapiro_stat, shapiro_p = stats.shapiro(residuals)
+
+# Jarque-Bera Test (manual calculation)
+n_res = len(residuals)
+skewness = stats.skew(residuals)
+kurtosis = stats.kurtosis(residuals, fisher=False)  # Kurtosis normal = 3
+jb_stat = (n_res / 6) * (skewness**2 + ((kurtosis - 3)**2) / 4)
+jb_p = 1 - stats.chi2.cdf(jb_stat, 2)
+
+print("PERHITUNGAN:")
+print("-" * 60)
+print(f"Jumlah residual (n)      = {n_res}")
+print(f"Skewness                 = {skewness:.4f}")
+print(f"Kurtosis                 = {kurtosis:.4f}")
+print()
+print("A. Uji Shapiro-Wilk:")
+print(f"   W-statistik           = {shapiro_stat:.4f}")
+print(f"   P-value               = {shapiro_p:.6f}")
+print()
+print("B. Uji Jarque-Bera:")
+print(f"   JB = (n/6) * [S² + (K-3)²/4]")
+print(f"   JB = ({n_res}/6) * [{skewness:.4f}² + ({kurtosis:.4f}-3)²/4]")
+print(f"   JB-statistik          = {jb_stat:.4f}")
+print(f"   P-value               = {jb_p:.6f}")
+
+print("\nKESIMPULAN UJI NORMALITAS:")
+print("-" * 60)
+print(f"Shapiro-Wilk: p-value ({shapiro_p:.4f}) {'>' if shapiro_p > alpha else '<='} alpha ({alpha})")
+if shapiro_p > alpha:
+    print("   Keputusan: GAGAL TOLAK H0")
+    print("   Artinya: Residual BERDISTRIBUSI NORMAL")
+    normalitas_status = "Terpenuhi"
+else:
+    print("   Keputusan: TOLAK H0")
+    print("   Artinya: Residual TIDAK berdistribusi normal")
+    normalitas_status = "Tidak Terpenuhi"
+
+# ----------------------------------------------------------------------------
+# 2. UJI MULTIKOLINIERITAS (VIF)
+# ----------------------------------------------------------------------------
+print("\n" + "-" * 80)
+print("2. UJI MULTIKOLINIERITAS (VIF)")
+print("-" * 80)
+
+print("""
+RUMUS VARIANCE INFLATION FACTOR (VIF):
+======================================
+
+            1
+VIF = -------------
+        1 - Ri²
+
+Dimana: Ri² = koefisien determinasi dari regresi Xi terhadap variabel independen lainnya
+
+Interpretasi:
+- VIF = 1      : Tidak ada korelasi
+- 1 < VIF < 5  : Korelasi moderat (dapat diterima)
+- 5 < VIF < 10 : Korelasi tinggi (perlu perhatian)
+- VIF >= 10    : Multikolinieritas serius (bermasalah)
+
+Kriteria: Tidak ada multikolinieritas jika VIF < 10
+""")
+
+# Menghitung VIF secara manual
+# VIF untuk X1: regresikan X1 terhadap X2
+X1_with_const = sm.add_constant(X2)
+model_X1 = sm.OLS(X1, X1_with_const).fit()
+R2_X1 = model_X1.rsquared
+VIF_X1 = 1 / (1 - R2_X1)
+
+# VIF untuk X2: regresikan X2 terhadap X1
+X2_with_const = sm.add_constant(X1)
+model_X2 = sm.OLS(X2, X2_with_const).fit()
+R2_X2 = model_X2.rsquared
+VIF_X2 = 1 / (1 - R2_X2)
+
+print("PERHITUNGAN:")
+print("-" * 60)
+print()
+print("VIF untuk X1 (Pertumbuhan Ekonomi):")
+print(f"   R² (X1 ~ X2)          = {R2_X1:.4f}")
+print(f"   VIF = 1/(1-R²)        = 1/(1-{R2_X1:.4f}) = {VIF_X1:.4f}")
+print()
+print("VIF untuk X2 (Akses Sanitasi):")
+print(f"   R² (X2 ~ X1)          = {R2_X2:.4f}")
+print(f"   VIF = 1/(1-R²)        = 1/(1-{R2_X2:.4f}) = {VIF_X2:.4f}")
+
+print("\n" + "-" * 60)
+print(f"{'Variabel':<30} {'R²':>12} {'VIF':>12} {'Keterangan':>20}")
+print("-" * 60)
+print(f"{'X1 (Pertumbuhan Ekonomi)':<30} {R2_X1:>12.4f} {VIF_X1:>12.4f} {'OK' if VIF_X1 < 10 else 'Multikolinieritas':>20}")
+print(f"{'X2 (Akses Sanitasi)':<30} {R2_X2:>12.4f} {VIF_X2:>12.4f} {'OK' if VIF_X2 < 10 else 'Multikolinieritas':>20}")
+print("-" * 60)
+
+print("\nKESIMPULAN UJI MULTIKOLINIERITAS:")
+print("-" * 60)
+if VIF_X1 < 10 and VIF_X2 < 10:
+    print(f"VIF X1 ({VIF_X1:.4f}) < 10 dan VIF X2 ({VIF_X2:.4f}) < 10")
+    print("Keputusan: TIDAK ADA MULTIKOLINIERITAS")
+    print("Artinya: Asumsi non-multikolinieritas TERPENUHI")
+    multikolinieritas_status = "Terpenuhi"
+else:
+    print(f"Terdapat VIF >= 10")
+    print("Keputusan: TERJADI MULTIKOLINIERITAS")
+    print("Artinya: Asumsi non-multikolinieritas TIDAK terpenuhi")
+    multikolinieritas_status = "Tidak Terpenuhi"
+
+# ----------------------------------------------------------------------------
+# 3. UJI HETEROSKEDASTISITAS (Breusch-Pagan)
+# ----------------------------------------------------------------------------
+print("\n" + "-" * 80)
+print("3. UJI HETEROSKEDASTISITAS (Breusch-Pagan)")
+print("-" * 80)
+
+print("""
+RUMUS UJI BREUSCH-PAGAN:
+========================
+
+Langkah:
+1. Estimasi model regresi, dapatkan residual (e)
+2. Hitung e² (residual kuadrat)
+3. Regresikan e² terhadap variabel independen
+4. Hitung statistik uji: BP = n * R²
+
+            BP ~ Chi-Square(k)
+
+Hipotesis:
+- H0: Tidak ada heteroskedastisitas (varians konstan/homoskedastis)
+- H1: Terdapat heteroskedastisitas (varians tidak konstan)
+
+Kriteria: Tolak H0 jika p-value < alpha (0.05)
+""")
+
+# Breusch-Pagan Test manual
+residuals_squared = residuals ** 2
+X_bp = sm.add_constant(np.column_stack([X1, X2]))
+model_bp = sm.OLS(residuals_squared, X_bp).fit()
+R2_bp = model_bp.rsquared
+BP_stat = n * R2_bp
+BP_p = 1 - stats.chi2.cdf(BP_stat, k)
+
+print("PERHITUNGAN:")
+print("-" * 60)
+print(f"1. Residual (e) sudah dihitung dari model utama")
+print(f"2. Menghitung e² (residual kuadrat)")
+print(f"3. Meregresikan e² terhadap X1 dan X2")
+print(f"   R² (e² ~ X1, X2)      = {R2_bp:.4f}")
+print(f"4. BP = n * R²           = {n} * {R2_bp:.4f} = {BP_stat:.4f}")
+print(f"   df                    = k = {k}")
+print(f"   P-value               = {BP_p:.6f}")
+
+print("\nKESIMPULAN UJI HETEROSKEDASTISITAS:")
+print("-" * 60)
+print(f"BP-statistik = {BP_stat:.4f}, P-value = {BP_p:.6f}")
+print(f"P-value ({BP_p:.4f}) {'>' if BP_p > alpha else '<='} alpha ({alpha})")
+if BP_p > alpha:
+    print("Keputusan: GAGAL TOLAK H0")
+    print("Artinya: TIDAK ADA heteroskedastisitas (Homoskedastis)")
+    print("         Asumsi homoskedastisitas TERPENUHI")
+    heteroskedastisitas_status = "Terpenuhi"
+else:
+    print("Keputusan: TOLAK H0")
+    print("Artinya: TERDAPAT heteroskedastisitas")
+    print("         Asumsi homoskedastisitas TIDAK terpenuhi")
+    heteroskedastisitas_status = "Tidak Terpenuhi"
+
+# ----------------------------------------------------------------------------
+# 4. UJI AUTOKORELASI (Durbin-Watson)
+# ----------------------------------------------------------------------------
+print("\n" + "-" * 80)
+print("4. UJI AUTOKORELASI (Durbin-Watson)")
+print("-" * 80)
+
+print("""
+RUMUS UJI DURBIN-WATSON:
+========================
+
+         n
+        Σ (ei - ei-1)²
+       i=2
+DW = --------------------
+         n
+        Σ ei²
+       i=1
+
+Interpretasi nilai DW (0 sampai 4):
+- DW ≈ 2     : Tidak ada autokorelasi
+- DW < dL    : Autokorelasi positif
+- DW > 4-dL  : Autokorelasi negatif
+- dL < DW < dU atau 4-dU < DW < 4-dL : Inconclusive (tidak dapat disimpulkan)
+- dU < DW < 4-dU : Tidak ada autokorelasi
+
+Hipotesis:
+- H0: Tidak ada autokorelasi
+- H1: Terdapat autokorelasi
+
+Catatan: dL dan dU adalah nilai kritis dari tabel Durbin-Watson
+         (tergantung n dan k pada alpha tertentu)
+""")
+
+# Durbin-Watson manual calculation
+dw_numerator = np.sum(np.diff(residuals)**2)
+dw_denominator = np.sum(residuals**2)
+DW_stat = dw_numerator / dw_denominator
+
+# Nilai kritis DW untuk n=34, k=2, alpha=0.05 (dari tabel)
+dL = 1.333  # approximate
+dU = 1.580  # approximate
+
+print("PERHITUNGAN:")
+print("-" * 60)
+print(f"Σ(ei - ei-1)²            = {dw_numerator:.4f}")
+print(f"Σei²                     = {dw_denominator:.4f}")
+print(f"DW = Σ(ei-ei-1)²/Σei²    = {dw_numerator:.4f}/{dw_denominator:.4f} = {DW_stat:.4f}")
+print()
+print(f"Nilai kritis (n={n}, k={k}, alpha={alpha}):")
+print(f"   dL (lower)            = {dL:.3f}")
+print(f"   dU (upper)            = {dU:.3f}")
+print(f"   4-dU                  = {4-dU:.3f}")
+print(f"   4-dL                  = {4-dL:.3f}")
+
+print("\nKESIMPULAN UJI AUTOKORELASI:")
+print("-" * 60)
+print(f"DW = {DW_stat:.4f}")
+
+if DW_stat < dL:
+    print(f"DW ({DW_stat:.4f}) < dL ({dL:.3f})")
+    print("Keputusan: TERDAPAT AUTOKORELASI POSITIF")
+    autokorelasi_status = "Tidak Terpenuhi (Autokorelasi Positif)"
+elif DW_stat > 4 - dL:
+    print(f"DW ({DW_stat:.4f}) > 4-dL ({4-dL:.3f})")
+    print("Keputusan: TERDAPAT AUTOKORELASI NEGATIF")
+    autokorelasi_status = "Tidak Terpenuhi (Autokorelasi Negatif)"
+elif dL <= DW_stat <= dU or (4-dU) <= DW_stat <= (4-dL):
+    print(f"DW ({DW_stat:.4f}) berada di zona inconclusive")
+    print("Keputusan: TIDAK DAPAT DISIMPULKAN (Inconclusive)")
+    autokorelasi_status = "Inconclusive"
+else:
+    print(f"dU ({dU:.3f}) < DW ({DW_stat:.4f}) < 4-dU ({4-dU:.3f})")
+    print("Keputusan: TIDAK ADA AUTOKORELASI")
+    print("Artinya: Asumsi non-autokorelasi TERPENUHI")
+    autokorelasi_status = "Terpenuhi"
+
+# ----------------------------------------------------------------------------
+# RINGKASAN UJI ASUMSI KLASIK
+# ----------------------------------------------------------------------------
+print("\n" + "=" * 80)
+print("RINGKASAN UJI ASUMSI KLASIK")
+print("=" * 80)
+print(f"{'No':<4} {'Uji Asumsi':<30} {'Statistik':>15} {'P-value':>12} {'Status':>20}")
+print("-" * 85)
+print(f"{'1.':<4} {'Normalitas (Shapiro-Wilk)':<30} {shapiro_stat:>15.4f} {shapiro_p:>12.4f} {normalitas_status:>20}")
+print(f"{'2.':<4} {'Multikolinieritas (VIF X1)':<30} {VIF_X1:>15.4f} {'-':>12} {'OK' if VIF_X1 < 10 else 'Masalah':>20}")
+print(f"{'  ':<4} {'Multikolinieritas (VIF X2)':<30} {VIF_X2:>15.4f} {'-':>12} {'OK' if VIF_X2 < 10 else 'Masalah':>20}")
+print(f"{'3.':<4} {'Heteroskedastisitas (BP)':<30} {BP_stat:>15.4f} {BP_p:>12.4f} {heteroskedastisitas_status:>20}")
+print(f"{'4.':<4} {'Autokorelasi (DW)':<30} {DW_stat:>15.4f} {'-':>12} {autokorelasi_status:>20}")
+print("-" * 85)
+
+# ============================================================================
+# VISUALISASI UJI ASUMSI KLASIK
+# ============================================================================
+print("\n" + "=" * 80)
+print("MEMBUAT VISUALISASI UJI ASUMSI KLASIK...")
+print("=" * 80)
+
+fig_asumsi, axes_asumsi = plt.subplots(2, 2, figsize=(14, 12))
+
+# 1. Q-Q Plot untuk Uji Normalitas
+ax1_asumsi = axes_asumsi[0, 0]
+stats.probplot(residuals, dist="norm", plot=ax1_asumsi)
+ax1_asumsi.set_title('Q-Q Plot Residual (Uji Normalitas)', fontsize=12, fontweight='bold')
+ax1_asumsi.grid(True, alpha=0.3)
+
+# 2. Histogram Residual dengan Kurva Normal
+ax2_asumsi = axes_asumsi[0, 1]
+ax2_asumsi.hist(residuals, bins=10, density=True, color='steelblue', edgecolor='black', alpha=0.7)
+xmin, xmax = ax2_asumsi.get_xlim()
+x_norm = np.linspace(xmin, xmax, 100)
+p_norm = stats.norm.pdf(x_norm, np.mean(residuals), np.std(residuals))
+ax2_asumsi.plot(x_norm, p_norm, 'r-', linewidth=2, label='Distribusi Normal')
+ax2_asumsi.set_xlabel('Residual', fontsize=11)
+ax2_asumsi.set_ylabel('Density', fontsize=11)
+ax2_asumsi.set_title(f'Histogram Residual\n(Shapiro-Wilk p={shapiro_p:.4f})', fontsize=12, fontweight='bold')
+ax2_asumsi.legend()
+ax2_asumsi.grid(True, alpha=0.3)
+
+# 3. Scatter Plot untuk Heteroskedastisitas
+ax3_asumsi = axes_asumsi[1, 0]
+ax3_asumsi.scatter(Y_pred, residuals, color='purple', alpha=0.7, edgecolors='black', s=80)
+ax3_asumsi.axhline(y=0, color='red', linestyle='--', linewidth=2)
+ax3_asumsi.set_xlabel('Nilai Prediksi (Fitted Values)', fontsize=11)
+ax3_asumsi.set_ylabel('Residual', fontsize=11)
+ax3_asumsi.set_title(f'Residual vs Fitted (Uji Heteroskedastisitas)\n(Breusch-Pagan p={BP_p:.4f})', fontsize=12, fontweight='bold')
+ax3_asumsi.grid(True, alpha=0.3)
+
+# 4. Bar Chart VIF untuk Multikolinieritas
+ax4_asumsi = axes_asumsi[1, 1]
+vif_values = [VIF_X1, VIF_X2]
+vif_labels = ['X1\n(Ekonomi)', 'X2\n(Sanitasi)']
+colors_vif = ['green' if v < 5 else 'orange' if v < 10 else 'red' for v in vif_values]
+bars_vif = ax4_asumsi.bar(vif_labels, vif_values, color=colors_vif, edgecolor='black', alpha=0.7)
+ax4_asumsi.axhline(y=10, color='red', linestyle='--', linewidth=2, label='Batas Kritis (VIF=10)')
+ax4_asumsi.axhline(y=5, color='orange', linestyle='--', linewidth=2, label='Perhatian (VIF=5)')
+for bar, val in zip(bars_vif, vif_values):
+    ax4_asumsi.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.1, f'{val:.2f}', 
+                    ha='center', va='bottom', fontsize=11, fontweight='bold')
+ax4_asumsi.set_ylabel('VIF', fontsize=11)
+ax4_asumsi.set_title('Variance Inflation Factor (Uji Multikolinieritas)', fontsize=12, fontweight='bold')
+ax4_asumsi.legend(loc='upper right')
+ax4_asumsi.grid(True, alpha=0.3, axis='y')
+
+plt.suptitle('Uji Asumsi Klasik Regresi Berganda\n34 Provinsi Indonesia Tahun 2023', 
+             fontsize=14, fontweight='bold', y=1.02)
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/15_uji_asumsi_klasik.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar: 15_uji_asumsi_klasik.png berhasil disimpan!")
+
+# Tabel Ringkasan Uji Asumsi Klasik dalam gambar
+fig_ringkasan_asumsi, ax_ringkasan = plt.subplots(figsize=(12, 10))
+ax_ringkasan.axis('off')
+
+ringkasan_asumsi_text = f"""
+RINGKASAN UJI ASUMSI KLASIK
+Analisis Regresi Berganda: Pengaruh Pertumbuhan Ekonomi dan Akses Sanitasi
+terhadap Stunting di 34 Provinsi Indonesia Tahun 2023
+
+{'='*75}
+
+1. UJI NORMALITAS RESIDUAL (Shapiro-Wilk)
+{'-'*75}
+   W-statistik  = {shapiro_stat:.4f}
+   P-value      = {shapiro_p:.6f}
+   Keputusan    : {'GAGAL TOLAK H0 - Residual Berdistribusi Normal' if shapiro_p > alpha else 'TOLAK H0 - Residual Tidak Normal'}
+   Status       : {normalitas_status}
+
+2. UJI MULTIKOLINIERITAS (Variance Inflation Factor)
+{'-'*75}
+   VIF X1 (Pertumbuhan Ekonomi) = {VIF_X1:.4f}  {'(OK)' if VIF_X1 < 10 else '(MASALAH)'}
+   VIF X2 (Akses Sanitasi)      = {VIF_X2:.4f}  {'(OK)' if VIF_X2 < 10 else '(MASALAH)'}
+   Keputusan    : {'Tidak Ada Multikolinieritas' if VIF_X1 < 10 and VIF_X2 < 10 else 'Terjadi Multikolinieritas'}
+   Status       : {multikolinieritas_status}
+
+3. UJI HETEROSKEDASTISITAS (Breusch-Pagan)
+{'-'*75}
+   BP-statistik = {BP_stat:.4f}
+   P-value      = {BP_p:.6f}
+   Keputusan    : {'GAGAL TOLAK H0 - Homoskedastis' if BP_p > alpha else 'TOLAK H0 - Heteroskedastis'}
+   Status       : {heteroskedastisitas_status}
+
+4. UJI AUTOKORELASI (Durbin-Watson)
+{'-'*75}
+   DW-statistik = {DW_stat:.4f}
+   dL = {dL:.3f}, dU = {dU:.3f}
+   Keputusan    : {autokorelasi_status}
+
+{'='*75}
+Keterangan: Alpha = {alpha}
+"""
+
+ax_ringkasan.text(0.5, 0.5, ringkasan_asumsi_text, transform=ax_ringkasan.transAxes, fontsize=10,
+                  verticalalignment='center', horizontalalignment='center',
+                  fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.9))
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/16_ringkasan_uji_asumsi_klasik.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar: 16_ringkasan_uji_asumsi_klasik.png berhasil disimpan!")
+
 print("\n" + "=" * 80)
 print("RINGKASAN HASIL ANALISIS")
 print("=" * 80)
