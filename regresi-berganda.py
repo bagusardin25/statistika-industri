@@ -45,6 +45,261 @@ print("ANALISIS PENGARUH PERTUMBUHAN EKONOMI DAN AKSES SANITASI")
 print("TERHADAP ANGKA STUNTING DI 34 PROVINSI INDONESIA TAHUN 2023")
 print("=" * 80)
 
+# ============================================================================
+# STATISTIK DESKRIPTIF
+# ============================================================================
+print("\n" + "=" * 80)
+print("STATISTIK DESKRIPTIF")
+print("=" * 80)
+
+print("""
+RUMUS STATISTIK DESKRIPTIF:
+===========================
+
+1. MEAN (Rata-rata):
+                n
+               Σ Xi
+              i=1
+   Mean = ----------
+               n
+
+2. MEDIAN (Nilai Tengah):
+   - Jika n ganjil: Median = X[(n+1)/2]
+   - Jika n genap : Median = (X[n/2] + X[(n/2)+1]) / 2
+
+3. MODUS:
+   Modus = Nilai dengan frekuensi tertinggi
+
+4. STANDAR DEVIASI (Sampel):
+              ___________________
+             /   n
+            /   Σ (Xi - X̄)²
+           /   i=1
+   s =    / ------------------
+        \/        n - 1
+
+5. VARIANS (Sampel):
+              n
+             Σ (Xi - X̄)²
+            i=1
+   s² = ----------------
+             n - 1
+
+6. MINIMUM: Nilai terkecil dalam data
+7. MAXIMUM: Nilai terbesar dalam data
+8. RANGE: Max - Min
+""")
+
+# Fungsi untuk menghitung modus
+def hitung_modus(data):
+    from collections import Counter
+    rounded_data = [round(x, 1) for x in data]
+    counter = Counter(rounded_data)
+    max_freq = max(counter.values())
+    if max_freq == 1:
+        return "Tidak ada (semua nilai unik)", 1
+    modes = [k for k, v in counter.items() if v == max_freq]
+    return modes, max_freq
+
+# Perhitungan untuk setiap variabel
+variables = {
+    'Y (Angka Stunting %)': Y,
+    'X1 (Pertumbuhan Ekonomi %)': X1,
+    'X2 (Akses Sanitasi %)': X2
+}
+
+print("PERHITUNGAN STATISTIK DESKRIPTIF:")
+print("=" * 90)
+
+for var_name, var_data in variables.items():
+    print(f"\n>>> {var_name}")
+    print("-" * 60)
+    
+    # Perhitungan manual
+    n_data = len(var_data)
+    sum_data = np.sum(var_data)
+    mean_val = sum_data / n_data
+    
+    sorted_data = np.sort(var_data)
+    if n_data % 2 == 0:
+        median_val = (sorted_data[n_data//2 - 1] + sorted_data[n_data//2]) / 2
+    else:
+        median_val = sorted_data[n_data//2]
+    
+    modus_val, modus_freq = hitung_modus(var_data)
+    
+    sum_sq_diff = np.sum((var_data - mean_val)**2)
+    variance_val = sum_sq_diff / (n_data - 1)
+    std_val = np.sqrt(variance_val)
+    
+    min_val = np.min(var_data)
+    max_val = np.max(var_data)
+    range_val = max_val - min_val
+    
+    # Output perhitungan
+    print(f"   n = {n_data}")
+    print(f"   Σxi = {sum_data:.4f}")
+    print(f"")
+    print(f"   Mean    = Σxi / n = {sum_data:.4f} / {n_data} = {mean_val:.4f}")
+    print(f"   Median  = {median_val:.4f}")
+    print(f"   Modus   = {modus_val} (frekuensi: {modus_freq})")
+    print(f"")
+    print(f"   Σ(xi-x̄)² = {sum_sq_diff:.4f}")
+    print(f"   Varians = Σ(xi-x̄)²/(n-1) = {sum_sq_diff:.4f}/{n_data-1} = {variance_val:.4f}")
+    print(f"   Std Dev = √Varians = √{variance_val:.4f} = {std_val:.4f}")
+    print(f"")
+    print(f"   Min     = {min_val:.4f}")
+    print(f"   Max     = {max_val:.4f}")
+    print(f"   Range   = Max - Min = {max_val:.4f} - {min_val:.4f} = {range_val:.4f}")
+
+# Tabel Ringkasan
+print("\n" + "=" * 90)
+print("TABEL RINGKASAN STATISTIK DESKRIPTIF")
+print("=" * 90)
+print(f"{'Statistik':<20} {'Y (Stunting)':>18} {'X1 (Ekonomi)':>18} {'X2 (Sanitasi)':>18}")
+print("-" * 90)
+print(f"{'N':<20} {n:>18} {n:>18} {n:>18}")
+print(f"{'Mean':<20} {np.mean(Y):>18.4f} {np.mean(X1):>18.4f} {np.mean(X2):>18.4f}")
+print(f"{'Median':<20} {np.median(Y):>18.4f} {np.median(X1):>18.4f} {np.median(X2):>18.4f}")
+print(f"{'Std. Deviation':<20} {np.std(Y, ddof=1):>18.4f} {np.std(X1, ddof=1):>18.4f} {np.std(X2, ddof=1):>18.4f}")
+print(f"{'Variance':<20} {np.var(Y, ddof=1):>18.4f} {np.var(X1, ddof=1):>18.4f} {np.var(X2, ddof=1):>18.4f}")
+print(f"{'Minimum':<20} {np.min(Y):>18.4f} {np.min(X1):>18.4f} {np.min(X2):>18.4f}")
+print(f"{'Maximum':<20} {np.max(Y):>18.4f} {np.max(X1):>18.4f} {np.max(X2):>18.4f}")
+print(f"{'Range':<20} {np.max(Y)-np.min(Y):>18.4f} {np.max(X1)-np.min(X1):>18.4f} {np.max(X2)-np.min(X2):>18.4f}")
+print("-" * 90)
+
+# ============================================================================
+# VISUALISASI STATISTIK DESKRIPTIF (MASING-MASING FILE TERPISAH)
+# ============================================================================
+print("\n" + "=" * 80)
+print("MEMBUAT VISUALISASI STATISTIK DESKRIPTIF...")
+print("=" * 80)
+
+# 1. Histogram Y (Stunting) - File Terpisah
+fig1, ax1 = plt.subplots(figsize=(8, 6))
+ax1.hist(Y, bins=8, color='steelblue', edgecolor='black', alpha=0.7)
+ax1.axvline(np.mean(Y), color='red', linestyle='--', linewidth=2, label=f'Mean = {np.mean(Y):.2f}')
+ax1.axvline(np.median(Y), color='green', linestyle='-.', linewidth=2, label=f'Median = {np.median(Y):.2f}')
+ax1.set_xlabel('Angka Stunting (%)', fontsize=11)
+ax1.set_ylabel('Frekuensi', fontsize=11)
+ax1.set_title('Distribusi Y (Angka Stunting)\n34 Provinsi Indonesia Tahun 2023', fontsize=12, fontweight='bold')
+ax1.legend(fontsize=10)
+ax1.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12a_histogram_Y_stunting.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar 1: 12a_histogram_Y_stunting.png berhasil disimpan!")
+
+# 2. Histogram X1 (Pertumbuhan Ekonomi) - File Terpisah
+fig2, ax2 = plt.subplots(figsize=(8, 6))
+ax2.hist(X1, bins=8, color='forestgreen', edgecolor='black', alpha=0.7)
+ax2.axvline(np.mean(X1), color='red', linestyle='--', linewidth=2, label=f'Mean = {np.mean(X1):.2f}')
+ax2.axvline(np.median(X1), color='orange', linestyle='-.', linewidth=2, label=f'Median = {np.median(X1):.2f}')
+ax2.set_xlabel('Pertumbuhan Ekonomi (%)', fontsize=11)
+ax2.set_ylabel('Frekuensi', fontsize=11)
+ax2.set_title('Distribusi X1 (Pertumbuhan Ekonomi)\n34 Provinsi Indonesia Tahun 2023', fontsize=12, fontweight='bold')
+ax2.legend(fontsize=10)
+ax2.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12b_histogram_X1_ekonomi.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar 2: 12b_histogram_X1_ekonomi.png berhasil disimpan!")
+
+# 3. Histogram X2 (Akses Sanitasi) - File Terpisah
+fig3, ax3 = plt.subplots(figsize=(8, 6))
+ax3.hist(X2, bins=8, color='coral', edgecolor='black', alpha=0.7)
+ax3.axvline(np.mean(X2), color='red', linestyle='--', linewidth=2, label=f'Mean = {np.mean(X2):.2f}')
+ax3.axvline(np.median(X2), color='blue', linestyle='-.', linewidth=2, label=f'Median = {np.median(X2):.2f}')
+ax3.set_xlabel('Akses Sanitasi (%)', fontsize=11)
+ax3.set_ylabel('Frekuensi', fontsize=11)
+ax3.set_title('Distribusi X2 (Akses Sanitasi)\n34 Provinsi Indonesia Tahun 2023', fontsize=12, fontweight='bold')
+ax3.legend(fontsize=10)
+ax3.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12c_histogram_X2_sanitasi.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar 3: 12c_histogram_X2_sanitasi.png berhasil disimpan!")
+
+# 4. Boxplot Semua Variabel - File Terpisah
+fig4, ax4 = plt.subplots(figsize=(8, 6))
+bp = ax4.boxplot([Y, X1, X2], tick_labels=['Y\n(Stunting)', 'X1\n(Ekonomi)', 'X2\n(Sanitasi)'],
+                  patch_artist=True)
+colors = ['steelblue', 'forestgreen', 'coral']
+for patch, color in zip(bp['boxes'], colors):
+    patch.set_facecolor(color)
+    patch.set_alpha(0.7)
+ax4.set_ylabel('Nilai (%)', fontsize=11)
+ax4.set_title('Boxplot Perbandingan Variabel\n34 Provinsi Indonesia Tahun 2023', fontsize=12, fontweight='bold')
+ax4.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12d_boxplot_perbandingan.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar 4: 12d_boxplot_perbandingan.png berhasil disimpan!")
+
+# 5. Bar Chart Mean, Median, Std Dev - File Terpisah
+fig5, ax5 = plt.subplots(figsize=(10, 6))
+stats_names = ['Mean', 'Median', 'Std Dev']
+y_stats = [np.mean(Y), np.median(Y), np.std(Y, ddof=1)]
+x1_stats = [np.mean(X1), np.median(X1), np.std(X1, ddof=1)]
+x2_stats = [np.mean(X2), np.median(X2), np.std(X2, ddof=1)]
+
+x_pos = np.arange(len(stats_names))
+width = 0.25
+
+bars1 = ax5.bar(x_pos - width, y_stats, width, label='Y (Stunting)', color='steelblue', alpha=0.7)
+bars2 = ax5.bar(x_pos, x1_stats, width, label='X1 (Ekonomi)', color='forestgreen', alpha=0.7)
+bars3 = ax5.bar(x_pos + width, x2_stats, width, label='X2 (Sanitasi)', color='coral', alpha=0.7)
+
+ax5.set_ylabel('Nilai', fontsize=11)
+ax5.set_title('Perbandingan Statistik Deskriptif\n34 Provinsi Indonesia Tahun 2023', fontsize=12, fontweight='bold')
+ax5.set_xticks(x_pos)
+ax5.set_xticklabels(stats_names)
+ax5.legend(fontsize=10)
+ax5.grid(True, alpha=0.3, axis='y')
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12e_barchart_statistik.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar 5: 12e_barchart_statistik.png berhasil disimpan!")
+
+# 6. Tabel Ringkasan Statistik Deskriptif - File Terpisah
+fig6, ax6 = plt.subplots(figsize=(10, 8))
+ax6.axis('off')
+
+table_text = f"""
+TABEL STATISTIK DESKRIPTIF
+Pengaruh Pertumbuhan Ekonomi dan Akses Sanitasi terhadap Stunting
+34 Provinsi Indonesia Tahun 2023
+
+{'='*55}
+
+{'Statistik':<18} {'Y (Stunting)':>12} {'X1 (Ekonomi)':>14} {'X2 (Sanitasi)':>14}
+{'-'*55}
+{'N':<18} {n:>12} {n:>14} {n:>14}
+{'Mean':<18} {np.mean(Y):>12.4f} {np.mean(X1):>14.4f} {np.mean(X2):>14.4f}
+{'Median':<18} {np.median(Y):>12.4f} {np.median(X1):>14.4f} {np.median(X2):>14.4f}
+{'Std. Deviation':<18} {np.std(Y,ddof=1):>12.4f} {np.std(X1,ddof=1):>14.4f} {np.std(X2,ddof=1):>14.4f}
+{'Variance':<18} {np.var(Y,ddof=1):>12.4f} {np.var(X1,ddof=1):>14.4f} {np.var(X2,ddof=1):>14.4f}
+{'Minimum':<18} {np.min(Y):>12.4f} {np.min(X1):>14.4f} {np.min(X2):>14.4f}
+{'Maximum':<18} {np.max(Y):>12.4f} {np.max(X1):>14.4f} {np.max(X2):>14.4f}
+{'Range':<18} {np.max(Y)-np.min(Y):>12.4f} {np.max(X1)-np.min(X1):>14.4f} {np.max(X2)-np.min(X2):>14.4f}
+{'-'*55}
+
+Keterangan Variabel:
+  Y  = Angka Stunting (%)
+  X1 = Pertumbuhan Ekonomi (%)
+  X2 = Akses Sanitasi (%)
+
+{'='*55}
+"""
+
+ax6.text(0.5, 0.5, table_text, transform=ax6.transAxes, fontsize=11,
+         verticalalignment='center', horizontalalignment='center',
+         fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.9))
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12f_tabel_statistik_deskriptif.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar 6: 12f_tabel_statistik_deskriptif.png berhasil disimpan!")
+
 # Regresi Berganda menggunakan statsmodels
 X = np.column_stack([X1, X2])
 X_with_const = sm.add_constant(X)
