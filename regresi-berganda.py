@@ -300,6 +300,281 @@ plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12f_tabel_sta
 plt.close()
 print("Gambar 6: 12f_tabel_statistik_deskriptif.png berhasil disimpan!")
 
+# ============================================================================
+# STATISTIK DESKRIPTIF VARIABEL KATEGORIK
+# ============================================================================
+print("\n" + "=" * 80)
+print("STATISTIK DESKRIPTIF VARIABEL KATEGORIK")
+print("=" * 80)
+
+print("""
+RUMUS STATISTIK DESKRIPTIF VARIABEL KATEGORIK:
+==============================================
+
+1. FREKUENSI (f):
+   f = Jumlah kemunculan suatu kategori dalam data
+
+2. FREKUENSI RELATIF (fr):
+              f
+   fr = ----------- x 100%
+              n
+   
+   Dimana: f = frekuensi kategori, n = total data
+
+3. FREKUENSI KUMULATIF (fk):
+   fk = f1 + f2 + f3 + ... + fi
+   
+   (Penjumlahan frekuensi dari kategori pertama sampai kategori ke-i)
+
+4. FREKUENSI KUMULATIF RELATIF (fkr):
+              fk
+   fkr = ----------- x 100%
+              n
+""")
+
+# Membuat kategori dari variabel numerik untuk demonstrasi
+# Kategorisasi Stunting berdasarkan WHO
+def kategorisasi_stunting(nilai):
+    if nilai < 20:
+        return 'Rendah (<20%)'
+    elif nilai < 30:
+        return 'Sedang (20-30%)'
+    else:
+        return 'Tinggi (>=30%)'
+
+# Kategorisasi Pertumbuhan Ekonomi
+def kategorisasi_ekonomi(nilai):
+    if nilai < 4:
+        return 'Lambat (<4%)'
+    elif nilai < 6:
+        return 'Sedang (4-6%)'
+    else:
+        return 'Cepat (>=6%)'
+
+# Kategorisasi Akses Sanitasi
+def kategorisasi_sanitasi(nilai):
+    if nilai < 75:
+        return 'Rendah (<75%)'
+    elif nilai < 85:
+        return 'Sedang (75-85%)'
+    else:
+        return 'Baik (>=85%)'
+
+# Membuat kolom kategorik
+df['Y_Kategori'] = df['Y'].apply(kategorisasi_stunting)
+df['X1_Kategori'] = df['X1'].apply(kategorisasi_ekonomi)
+df['X2_Kategori'] = df['X2'].apply(kategorisasi_sanitasi)
+
+# Fungsi untuk membuat tabel frekuensi lengkap
+def buat_tabel_frekuensi(data, nama_variabel, urutan_kategori=None):
+    print(f"\n>>> TABEL FREKUENSI: {nama_variabel}")
+    print("-" * 75)
+    
+    # Hitung frekuensi
+    freq = data.value_counts()
+    if urutan_kategori:
+        freq = freq.reindex(urutan_kategori).fillna(0).astype(int)
+    
+    n_total = len(data)
+    
+    # Hitung frekuensi relatif dan kumulatif
+    freq_relatif = (freq / n_total) * 100
+    freq_kumulatif = freq.cumsum()
+    freq_kum_relatif = (freq_kumulatif / n_total) * 100
+    
+    # Tampilkan tabel
+    print(f"{'Kategori':<25} {'Frekuensi (f)':>15} {'Fr. Relatif (%)':>18} {'Fk':>10} {'Fkr (%)':>12}")
+    print("-" * 75)
+    
+    for kategori in freq.index:
+        f = freq[kategori]
+        fr = freq_relatif[kategori]
+        fk = freq_kumulatif[kategori]
+        fkr = freq_kum_relatif[kategori]
+        print(f"{kategori:<25} {f:>15} {fr:>18.2f} {fk:>10} {fkr:>12.2f}")
+    
+    print("-" * 75)
+    print(f"{'TOTAL':<25} {n_total:>15} {100.00:>18.2f}")
+    
+    return freq, freq_relatif, freq_kumulatif, freq_kum_relatif
+
+# Tabel Frekuensi untuk setiap variabel kategorik
+print("\nPERHITUNGAN TABEL FREKUENSI:")
+print("=" * 75)
+
+# Urutan kategori
+urutan_stunting = ['Rendah (<20%)', 'Sedang (20-30%)', 'Tinggi (>=30%)']
+urutan_ekonomi = ['Lambat (<4%)', 'Sedang (4-6%)', 'Cepat (>=6%)']
+urutan_sanitasi = ['Rendah (<75%)', 'Sedang (75-85%)', 'Baik (>=85%)']
+
+freq_Y, fr_Y, fk_Y, fkr_Y = buat_tabel_frekuensi(df['Y_Kategori'], 'Kategori Stunting (Y)', urutan_stunting)
+freq_X1, fr_X1, fk_X1, fkr_X1 = buat_tabel_frekuensi(df['X1_Kategori'], 'Kategori Pertumbuhan Ekonomi (X1)', urutan_ekonomi)
+freq_X2, fr_X2, fk_X2, fkr_X2 = buat_tabel_frekuensi(df['X2_Kategori'], 'Kategori Akses Sanitasi (X2)', urutan_sanitasi)
+
+# Contoh perhitungan manual
+print("\n" + "=" * 75)
+print("CONTOH PERHITUNGAN MANUAL (Kategori Stunting):")
+print("=" * 75)
+print(f"""
+Diketahui: n = {n} provinsi
+
+Kategori 'Rendah (<20%)':
+  - Frekuensi (f)           = {freq_Y.get('Rendah (<20%)', 0)} provinsi
+  - Frekuensi Relatif (fr)  = f/n x 100% = {freq_Y.get('Rendah (<20%)', 0)}/{n} x 100% = {fr_Y.get('Rendah (<20%)', 0):.2f}%
+  - Frekuensi Kumulatif     = {fk_Y.get('Rendah (<20%)', 0)}
+  - Fk Relatif              = {fkr_Y.get('Rendah (<20%)', 0):.2f}%
+
+Kategori 'Sedang (20-30%)':
+  - Frekuensi (f)           = {freq_Y.get('Sedang (20-30%)', 0)} provinsi
+  - Frekuensi Relatif (fr)  = f/n x 100% = {freq_Y.get('Sedang (20-30%)', 0)}/{n} x 100% = {fr_Y.get('Sedang (20-30%)', 0):.2f}%
+  - Frekuensi Kumulatif     = {freq_Y.get('Rendah (<20%)', 0)} + {freq_Y.get('Sedang (20-30%)', 0)} = {fk_Y.get('Sedang (20-30%)', 0)}
+  - Fk Relatif              = {fkr_Y.get('Sedang (20-30%)', 0):.2f}%
+
+Kategori 'Tinggi (>=30%)':
+  - Frekuensi (f)           = {freq_Y.get('Tinggi (>=30%)', 0)} provinsi
+  - Frekuensi Relatif (fr)  = f/n x 100% = {freq_Y.get('Tinggi (>=30%)', 0)}/{n} x 100% = {fr_Y.get('Tinggi (>=30%)', 0):.2f}%
+  - Frekuensi Kumulatif     = {fk_Y.get('Sedang (20-30%)', 0)} + {freq_Y.get('Tinggi (>=30%)', 0)} = {fk_Y.get('Tinggi (>=30%)', 0)}
+  - Fk Relatif              = {fkr_Y.get('Tinggi (>=30%)', 0):.2f}%
+""")
+
+# ============================================================================
+# VISUALISASI VARIABEL KATEGORIK
+# ============================================================================
+print("\n" + "=" * 80)
+print("MEMBUAT VISUALISASI VARIABEL KATEGORIK...")
+print("=" * 80)
+
+# Bar Chart dan Pie Chart untuk Variabel Kategorik
+fig_kat, axes_kat = plt.subplots(2, 3, figsize=(15, 10))
+
+# Warna untuk setiap kategori
+colors_stunting = ['#2ecc71', '#f1c40f', '#e74c3c']
+colors_ekonomi = ['#e74c3c', '#f1c40f', '#2ecc71']
+colors_sanitasi = ['#e74c3c', '#f1c40f', '#2ecc71']
+
+# 1. Bar Chart Stunting
+ax1 = axes_kat[0, 0]
+freq_Y_ordered = freq_Y.reindex(urutan_stunting).fillna(0)
+bars1 = ax1.bar(range(len(urutan_stunting)), freq_Y_ordered.values, color=colors_stunting, edgecolor='black')
+ax1.set_xticks(range(len(urutan_stunting)))
+ax1.set_xticklabels(['Rendah', 'Sedang', 'Tinggi'], fontsize=10)
+ax1.set_ylabel('Frekuensi', fontsize=11)
+ax1.set_title('Distribusi Kategori Stunting (Y)', fontsize=12, fontweight='bold')
+for bar, val in zip(bars1, freq_Y_ordered.values):
+    ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3, f'{int(val)}', 
+             ha='center', va='bottom', fontsize=10, fontweight='bold')
+ax1.grid(True, alpha=0.3, axis='y')
+
+# 2. Bar Chart Ekonomi
+ax2 = axes_kat[0, 1]
+freq_X1_ordered = freq_X1.reindex(urutan_ekonomi).fillna(0)
+bars2 = ax2.bar(range(len(urutan_ekonomi)), freq_X1_ordered.values, color=colors_ekonomi, edgecolor='black')
+ax2.set_xticks(range(len(urutan_ekonomi)))
+ax2.set_xticklabels(['Lambat', 'Sedang', 'Cepat'], fontsize=10)
+ax2.set_ylabel('Frekuensi', fontsize=11)
+ax2.set_title('Distribusi Kategori Pertumbuhan Ekonomi (X1)', fontsize=12, fontweight='bold')
+for bar, val in zip(bars2, freq_X1_ordered.values):
+    ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3, f'{int(val)}', 
+             ha='center', va='bottom', fontsize=10, fontweight='bold')
+ax2.grid(True, alpha=0.3, axis='y')
+
+# 3. Bar Chart Sanitasi
+ax3 = axes_kat[0, 2]
+freq_X2_ordered = freq_X2.reindex(urutan_sanitasi).fillna(0)
+bars3 = ax3.bar(range(len(urutan_sanitasi)), freq_X2_ordered.values, color=colors_sanitasi, edgecolor='black')
+ax3.set_xticks(range(len(urutan_sanitasi)))
+ax3.set_xticklabels(['Rendah', 'Sedang', 'Baik'], fontsize=10)
+ax3.set_ylabel('Frekuensi', fontsize=11)
+ax3.set_title('Distribusi Kategori Akses Sanitasi (X2)', fontsize=12, fontweight='bold')
+for bar, val in zip(bars3, freq_X2_ordered.values):
+    ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3, f'{int(val)}', 
+             ha='center', va='bottom', fontsize=10, fontweight='bold')
+ax3.grid(True, alpha=0.3, axis='y')
+
+# 4. Pie Chart Stunting
+ax4 = axes_kat[1, 0]
+sizes_Y = freq_Y_ordered.values
+labels_Y = [f'{cat}\n({int(val)} provinsi)' for cat, val in zip(['Rendah', 'Sedang', 'Tinggi'], sizes_Y)]
+ax4.pie(sizes_Y, labels=labels_Y, colors=colors_stunting, autopct='%1.1f%%', startangle=90, 
+        explode=(0.02, 0.02, 0.02), shadow=True)
+ax4.set_title('Proporsi Kategori Stunting (Y)', fontsize=12, fontweight='bold')
+
+# 5. Pie Chart Ekonomi
+ax5 = axes_kat[1, 1]
+sizes_X1 = freq_X1_ordered.values
+labels_X1 = [f'{cat}\n({int(val)} provinsi)' for cat, val in zip(['Lambat', 'Sedang', 'Cepat'], sizes_X1)]
+ax5.pie(sizes_X1, labels=labels_X1, colors=colors_ekonomi, autopct='%1.1f%%', startangle=90,
+        explode=(0.02, 0.02, 0.02), shadow=True)
+ax5.set_title('Proporsi Kategori Pertumbuhan Ekonomi (X1)', fontsize=12, fontweight='bold')
+
+# 6. Pie Chart Sanitasi
+ax6 = axes_kat[1, 2]
+sizes_X2 = freq_X2_ordered.values
+labels_X2 = [f'{cat}\n({int(val)} provinsi)' for cat, val in zip(['Rendah', 'Sedang', 'Baik'], sizes_X2)]
+ax6.pie(sizes_X2, labels=labels_X2, colors=colors_sanitasi, autopct='%1.1f%%', startangle=90,
+        explode=(0.02, 0.02, 0.02), shadow=True)
+ax6.set_title('Proporsi Kategori Akses Sanitasi (X2)', fontsize=12, fontweight='bold')
+
+plt.suptitle('Statistik Deskriptif Variabel Kategorik\n34 Provinsi Indonesia Tahun 2023', 
+             fontsize=14, fontweight='bold', y=1.02)
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/13_statistik_kategorik.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar: 13_statistik_kategorik.png berhasil disimpan!")
+
+# Tabel Frekuensi dalam bentuk gambar
+fig_tabel, ax_tabel = plt.subplots(figsize=(12, 10))
+ax_tabel.axis('off')
+
+tabel_kategorik_text = f"""
+TABEL FREKUENSI VARIABEL KATEGORIK
+Pengaruh Pertumbuhan Ekonomi dan Akses Sanitasi terhadap Stunting
+34 Provinsi Indonesia Tahun 2023
+
+{'='*70}
+
+1. TABEL FREKUENSI KATEGORI STUNTING (Y)
+{'-'*70}
+{'Kategori':<22} {'f':>8} {'fr (%)':>12} {'fk':>8} {'fkr (%)':>12}
+{'-'*70}
+{'Rendah (<20%)':<22} {int(freq_Y.get('Rendah (<20%)', 0)):>8} {fr_Y.get('Rendah (<20%)', 0):>12.2f} {int(fk_Y.get('Rendah (<20%)', 0)):>8} {fkr_Y.get('Rendah (<20%)', 0):>12.2f}
+{'Sedang (20-30%)':<22} {int(freq_Y.get('Sedang (20-30%)', 0)):>8} {fr_Y.get('Sedang (20-30%)', 0):>12.2f} {int(fk_Y.get('Sedang (20-30%)', 0)):>8} {fkr_Y.get('Sedang (20-30%)', 0):>12.2f}
+{'Tinggi (>=30%)':<22} {int(freq_Y.get('Tinggi (>=30%)', 0)):>8} {fr_Y.get('Tinggi (>=30%)', 0):>12.2f} {int(fk_Y.get('Tinggi (>=30%)', 0)):>8} {fkr_Y.get('Tinggi (>=30%)', 0):>12.2f}
+{'-'*70}
+{'TOTAL':<22} {n:>8} {100.00:>12.2f}
+
+2. TABEL FREKUENSI KATEGORI PERTUMBUHAN EKONOMI (X1)
+{'-'*70}
+{'Kategori':<22} {'f':>8} {'fr (%)':>12} {'fk':>8} {'fkr (%)':>12}
+{'-'*70}
+{'Lambat (<4%)':<22} {int(freq_X1.get('Lambat (<4%)', 0)):>8} {fr_X1.get('Lambat (<4%)', 0):>12.2f} {int(fk_X1.get('Lambat (<4%)', 0)):>8} {fkr_X1.get('Lambat (<4%)', 0):>12.2f}
+{'Sedang (4-6%)':<22} {int(freq_X1.get('Sedang (4-6%)', 0)):>8} {fr_X1.get('Sedang (4-6%)', 0):>12.2f} {int(fk_X1.get('Sedang (4-6%)', 0)):>8} {fkr_X1.get('Sedang (4-6%)', 0):>12.2f}
+{'Cepat (>=6%)':<22} {int(freq_X1.get('Cepat (>=6%)', 0)):>8} {fr_X1.get('Cepat (>=6%)', 0):>12.2f} {int(fk_X1.get('Cepat (>=6%)', 0)):>8} {fkr_X1.get('Cepat (>=6%)', 0):>12.2f}
+{'-'*70}
+{'TOTAL':<22} {n:>8} {100.00:>12.2f}
+
+3. TABEL FREKUENSI KATEGORI AKSES SANITASI (X2)
+{'-'*70}
+{'Kategori':<22} {'f':>8} {'fr (%)':>12} {'fk':>8} {'fkr (%)':>12}
+{'-'*70}
+{'Rendah (<75%)':<22} {int(freq_X2.get('Rendah (<75%)', 0)):>8} {fr_X2.get('Rendah (<75%)', 0):>12.2f} {int(fk_X2.get('Rendah (<75%)', 0)):>8} {fkr_X2.get('Rendah (<75%)', 0):>12.2f}
+{'Sedang (75-85%)':<22} {int(freq_X2.get('Sedang (75-85%)', 0)):>8} {fr_X2.get('Sedang (75-85%)', 0):>12.2f} {int(fk_X2.get('Sedang (75-85%)', 0)):>8} {fkr_X2.get('Sedang (75-85%)', 0):>12.2f}
+{'Baik (>=85%)':<22} {int(freq_X2.get('Baik (>=85%)', 0)):>8} {fr_X2.get('Baik (>=85%)', 0):>12.2f} {int(fk_X2.get('Baik (>=85%)', 0)):>8} {fkr_X2.get('Baik (>=85%)', 0):>12.2f}
+{'-'*70}
+{'TOTAL':<22} {n:>8} {100.00:>12.2f}
+
+{'='*70}
+Keterangan: f=frekuensi, fr=frekuensi relatif, fk=frekuensi kumulatif, fkr=frekuensi kumulatif relatif
+"""
+
+ax_tabel.text(0.5, 0.5, tabel_kategorik_text, transform=ax_tabel.transAxes, fontsize=10,
+              verticalalignment='center', horizontalalignment='center',
+              fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightcyan', alpha=0.9))
+plt.tight_layout()
+plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/14_tabel_frekuensi_kategorik.png', dpi=150, bbox_inches='tight')
+plt.close()
+print("Gambar: 14_tabel_frekuensi_kategorik.png berhasil disimpan!")
+
 # Regresi Berganda menggunakan statsmodels
 X = np.column_stack([X1, X2])
 X_with_const = sm.add_constant(X)
