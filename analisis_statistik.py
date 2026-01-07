@@ -1,7 +1,10 @@
 """
-Analisis Statistik: Uji Simultan (Uji F) dan Uji Parsial (Uji t)
+ANALISIS PENGARUH PERTUMBUHAN EKONOMI DAN AKSES SANITASI 
+TERHADAP ANGKA STUNTING DI 34 PROVINSI INDONESIA TAHUN 2023
 ================================================================
-Data: Pengaruh Ekonomi (X1), Pendidikan (X2), dan Sanitasi (X3) terhadap Stunting (Y)
+(Tanpa Variabel Tingkat Pendidikan)
+
+Data: Pertumbuhan Ekonomi (X1) dan Akses Sanitasi (X2) terhadap Stunting (Y)
 
 Rumus yang digunakan:
 ---------------------
@@ -203,23 +206,23 @@ def uji_t_parsial(beta, XtX_inv, MSE, n, k):
 # EKSEKUSI ANALISIS
 # ============================================================
 
-print("=" * 70)
-print("ANALISIS REGRESI LINEAR BERGANDA")
-print("Pengaruh Ekonomi dan Sanitasi terhadap Stunting")
-print("(Tanpa Variabel Pendidikan)")
-print("=" * 70)
+print("=" * 80)
+print("ANALISIS PENGARUH PERTUMBUHAN EKONOMI DAN AKSES SANITASI")
+print("TERHADAP ANGKA STUNTING DI 34 PROVINSI INDONESIA TAHUN 2023")
+print("(Tanpa Variabel Tingkat Pendidikan)")
+print("=" * 80)
 
 # 1. Hitung koefisien regresi
 beta, XtX_inv = hitung_koefisien_regresi(X, Y)
 Y_pred = np.dot(X, beta)  # Nilai prediksi
 
 print("\n📊 PERSAMAAN REGRESI:")
-print("-" * 50)
+print("-" * 60)
 print(f"Y = {beta[0]:.4f} + ({beta[1]:.4f})X1 + ({beta[2]:.4f})X2")
 print(f"\nDimana:")
-print(f"  Y  = Stunting")
-print(f"  X1 = Ekonomi  (β1 = {beta[1]:.4f})")
-print(f"  X2 = Sanitasi (β2 = {beta[2]:.4f})")
+print(f"  Y  = Angka Stunting (%)")
+print(f"  X1 = Pertumbuhan Ekonomi  (β1 = {beta[1]:.4f})")
+print(f"  X2 = Akses Sanitasi       (β2 = {beta[2]:.4f})")
 
 # 2. Hitung R²
 R_squared, SST, SSR, SSE = hitung_r_squared(Y, Y_pred)
@@ -229,8 +232,8 @@ print(f"\n📈 KOEFISIEN DETERMINASI:")
 print("-" * 50)
 print(f"R²           = {R_squared:.4f} ({R_squared*100:.2f}%)")
 print(f"R² Adjusted  = {R_squared_adj:.4f} ({R_squared_adj*100:.2f}%)")
-print(f"\nArtinya: {R_squared*100:.2f}% variasi Stunting dapat dijelaskan")
-print(f"oleh variabel Ekonomi dan Sanitasi.")
+print(f"\nArtinya: {R_squared*100:.2f}% variasi Angka Stunting dapat dijelaskan")
+print(f"oleh variabel Pertumbuhan Ekonomi dan Akses Sanitasi.")
 
 # 3. UJI F (SIMULTAN)
 F_hitung, F_tabel, p_value_F, df1, df2, MSR, MSE = uji_f_simultan(R_squared, n, k, SSR, SSE)
@@ -281,18 +284,18 @@ if F_hitung > F_tabel:
     print(f"✅ F-hitung ({F_hitung:.4f}) > F-tabel ({F_tabel:.4f})")
     print(f"✅ p-value ({p_value_F:.6f}) < α (0.05)")
     print(f"\n🎯 KEPUTUSAN: TOLAK H0")
-    print(f"   Artinya: Ekonomi dan Sanitasi secara SIMULTAN")
-    print(f"   berpengaruh signifikan terhadap Stunting.")
+    print(f"   Artinya: Pertumbuhan Ekonomi dan Akses Sanitasi secara SIMULTAN")
+    print(f"   berpengaruh signifikan terhadap Angka Stunting.")
 else:
     print(f"❌ F-hitung ({F_hitung:.4f}) ≤ F-tabel ({F_tabel:.4f})")
     print(f"❌ p-value ({p_value_F:.6f}) ≥ α (0.05)")
     print(f"\n🎯 KEPUTUSAN: GAGAL TOLAK H0")
-    print(f"   Artinya: Ekonomi dan Sanitasi secara SIMULTAN")
-    print(f"   TIDAK berpengaruh signifikan terhadap Stunting.")
+    print(f"   Artinya: Pertumbuhan Ekonomi dan Akses Sanitasi secara SIMULTAN")
+    print(f"   TIDAK berpengaruh signifikan terhadap Angka Stunting.")
 
 # 4. UJI t (PARSIAL)
 t_hitung, t_tabel, p_values_t, SE_beta, df_t = uji_t_parsial(beta, XtX_inv, MSE, n, k)
-var_names = ['Konstanta', 'Ekonomi (X1)', 'Sanitasi (X2)']
+var_names = ['Konstanta', 'Pertumbuhan Ekonomi (X1)', 'Akses Sanitasi (X2)']
 
 print("\n" + "=" * 70)
 print("📋 UJI PARSIAL (UJI t)")
@@ -395,8 +398,8 @@ plt.rcParams['figure.facecolor'] = 'white'
 
 # Buat figure dengan 2x3 subplots
 fig = plt.figure(figsize=(16, 12))
-fig.suptitle('VISUALISASI ANALISIS REGRESI LINEAR BERGANDA\nPengaruh Ekonomi dan Sanitasi terhadap Stunting', 
-             fontsize=14, fontweight='bold', y=0.98)
+fig.suptitle('ANALISIS PENGARUH PERTUMBUHAN EKONOMI DAN AKSES SANITASI\nTERHADAP ANGKA STUNTING DI 34 PROVINSI INDONESIA TAHUN 2023', 
+             fontsize=13, fontweight='bold', y=0.98)
 
 # ============================================================
 # 1. Scatter Plot: Ekonomi vs Stunting
@@ -410,9 +413,9 @@ p1 = np.poly1d(z1)
 x_line = np.linspace(X1.min(), X1.max(), 100)
 ax1.plot(x_line, p1(x_line), color='#e74c3c', linewidth=2, linestyle='--', label=f'Regresi (β={z1[0]:.3f})')
 
-ax1.set_xlabel('Ekonomi (X1)')
-ax1.set_ylabel('Stunting (Y)')
-ax1.set_title('Ekonomi vs Stunting', fontweight='bold')
+ax1.set_xlabel('Pertumbuhan Ekonomi (X1)')
+ax1.set_ylabel('Angka Stunting (Y)')
+ax1.set_title('Pertumbuhan Ekonomi vs Stunting', fontweight='bold')
 ax1.legend(loc='best', fontsize=8)
 ax1.grid(True, alpha=0.3)
 
@@ -428,9 +431,9 @@ p2 = np.poly1d(z2)
 x_line2 = np.linspace(X3.min(), X3.max(), 100)
 ax2.plot(x_line2, p2(x_line2), color='#e74c3c', linewidth=2, linestyle='--', label=f'Regresi (β={z2[0]:.3f})')
 
-ax2.set_xlabel('Sanitasi (X2)')
-ax2.set_ylabel('Stunting (Y)')
-ax2.set_title('Sanitasi vs Stunting', fontweight='bold')
+ax2.set_xlabel('Akses Sanitasi (X2)')
+ax2.set_ylabel('Angka Stunting (Y)')
+ax2.set_title('Akses Sanitasi vs Stunting', fontweight='bold')
 ax2.legend(loc='best', fontsize=8)
 ax2.grid(True, alpha=0.3)
 
@@ -462,7 +465,7 @@ ax4.grid(True, alpha=0.3)
 # 5. Perbandingan Koefisien (Bar Chart)
 # ============================================================
 ax5 = fig.add_subplot(2, 3, 5)
-koef_names = ['Konstanta', 'Ekonomi (X1)', 'Sanitasi (X2)']
+koef_names = ['Konstanta', 'Pertumbuhan\nEkonomi (X1)', 'Akses\nSanitasi (X2)']
 koef_values = beta
 colors = ['#95a5a6', '#3498db', '#2ecc71']
 
@@ -511,11 +514,11 @@ summary_text = f"""
 +==================================================+
 |  [4] UJI t (PARSIAL):                            |
 |                                                  |
-|  Ekonomi (X1):                                   |
+|  Pertumbuhan Ekonomi (X1):                       |
 |    t = {t_hitung[1]:.4f}, p = {p_values_t[1]:.4f}                    |
 |    {'[x] Tidak Signifikan' if p_values_t[1] >= 0.05 else '[v] Signifikan'}                           |
 |                                                  |
-|  Sanitasi (X2):                                  |
+|  Akses Sanitasi (X2):                            |
 |    t = {t_hitung[2]:.4f}, p = {p_values_t[2]:.4f}                    |
 |    {'[x] Tidak Signifikan' if p_values_t[2] >= 0.05 else '[v] Signifikan'}                            |
 |                                                  |
