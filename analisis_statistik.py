@@ -266,14 +266,106 @@ model_multi = sm.OLS(df['Angka_Stunting'], X_multi).fit()
 print(model_multi.summary())
 
 # =====================================================
-# 5.5 UJI ASUMSI KLASIK REGRESI
+# 5.5 UJI SIMULTAN (UJI F) DAN UJI PARSIAL (UJI T)
 # =====================================================
 print("\n" + "=" * 70)
-print("5.5 UJI ASUMSI KLASIK REGRESI")
+print("5.5 UJI SIMULTAN (UJI F) DAN UJI PARSIAL (UJI T)")
 print("=" * 70)
 
-# 5.5.1 Uji Multikolinearitas (VIF)
-print("\n5.5.1 Uji Multikolinearitas (VIF - Variance Inflation Factor)")
+# 5.5.1 Uji Simultan (Uji F)
+print("\n5.5.1 UJI SIMULTAN (UJI F)")
+print("-" * 50)
+print("H0: b1 = b2 = b3 = 0 (Semua variabel independen tidak berpengaruh)")
+print("H1: Minimal satu bi != 0 (Minimal satu variabel berpengaruh)")
+
+f_statistic = model_multi.fvalue
+f_pvalue = model_multi.f_pvalue
+df_model = model_multi.df_model  # k (jumlah variabel independen)
+df_resid = model_multi.df_resid  # n - k - 1
+
+print(f"\nF-hitung        : {f_statistic:.4f}")
+print(f"F-tabel (alpha={ALPHA}, df1={int(df_model)}, df2={int(df_resid)}): {stats.f.ppf(1-ALPHA, df_model, df_resid):.4f}")
+print(f"P-value         : {f_pvalue:.6f}")
+print(f"\nKeputusan (α={ALPHA}):")
+if f_pvalue < ALPHA:
+    print(f"   F-hitung ({f_statistic:.4f}) > F-tabel ({stats.f.ppf(1-ALPHA, df_model, df_resid):.4f})")
+    print(f"   P-value ({f_pvalue:.6f}) < α ({ALPHA})")
+    print("   >>> TOLAK H0: Model regresi signifikan secara simultan <<<")
+    print("   >>> Variabel independen secara bersama-sama berpengaruh terhadap Stunting <<<")
+else:
+    print(f"   F-hitung ({f_statistic:.4f}) <= F-tabel ({stats.f.ppf(1-ALPHA, df_model, df_resid):.4f})")
+    print(f"   P-value ({f_pvalue:.6f}) >= α ({ALPHA})")
+    print("   >>> GAGAL TOLAK H0: Model regresi tidak signifikan <<<")
+
+# 5.5.2 Uji Parsial (Uji t)
+print("\n5.5.2 UJI PARSIAL (UJI T)")
+print("-" * 50)
+print("H0: bi = 0 (Variabel Xi tidak berpengaruh terhadap Y)")
+print("H1: bi != 0 (Variabel Xi berpengaruh terhadap Y)")
+
+t_tabel = stats.t.ppf(1 - ALPHA/2, df_resid)  # two-tailed test
+print(f"\nT-tabel (alpha/2={ALPHA/2}, df={int(df_resid)}): +/-{t_tabel:.4f}")
+
+print("\nHasil Uji Parsial:")
+print("-" * 80)
+print(f"{'Variabel':<25} {'Koefisien':>12} {'T-hitung':>12} {'P-value':>12} {'Keputusan':>15}")
+print("-" * 80)
+
+var_names = ['Konstanta', 'Pertumbuhan_Ekonomi', 'Tingkat_Pendidikan', 'Akses_Sanitasi']
+for i, var in enumerate(var_names):
+    coef = model_multi.params[i]
+    t_stat = model_multi.tvalues[i]
+    p_val = model_multi.pvalues[i]
+    
+    if p_val < ALPHA:
+        keputusan = "SIGNIFIKAN"
+    else:
+        keputusan = "TIDAK SIGNIF."
+    
+    print(f"{var:<25} {coef:>12.4f} {t_stat:>12.4f} {p_val:>12.4f} {keputusan:>15}")
+
+print("-" * 80)
+
+# Interpretasi Uji Parsial
+print("\nInterpretasi Uji Parsial:")
+for i, var in enumerate(var_names[1:], 1):  # Skip konstanta
+    coef = model_multi.params[i]
+    p_val = model_multi.pvalues[i]
+    t_stat = model_multi.tvalues[i]
+    
+    if p_val < ALPHA:
+        pengaruh = "positif" if coef > 0 else "negatif"
+        print(f"   - {var}: Berpengaruh {pengaruh} dan SIGNIFIKAN terhadap Stunting")
+        print(f"     |t-hitung| ({abs(t_stat):.4f}) > t-tabel ({t_tabel:.4f}), p-value ({p_val:.4f}) < α ({ALPHA})")
+    else:
+        print(f"   - {var}: TIDAK SIGNIFIKAN terhadap Stunting")
+        print(f"     |t-hitung| ({abs(t_stat):.4f}) <= t-tabel ({t_tabel:.4f}), p-value ({p_val:.4f}) >= α ({ALPHA})")
+
+# Persamaan Regresi
+print("\n" + "-" * 50)
+print("PERSAMAAN REGRESI BERGANDA:")
+print("-" * 50)
+b0 = model_multi.params[0]
+b1 = model_multi.params[1]
+b2 = model_multi.params[2]
+b3 = model_multi.params[3]
+
+print(f"\nY = {b0:.4f} + ({b1:.4f})X1 + ({b2:.4f})X2 + ({b3:.4f})X3")
+print("\nDimana:")
+print("   Y  = Angka Stunting (prediksi)")
+print("   X1 = Pertumbuhan Ekonomi")
+print("   X2 = Tingkat Pendidikan")
+print("   X3 = Akses Sanitasi")
+
+# =====================================================
+# 5.6 UJI ASUMSI KLASIK REGRESI
+# =====================================================
+print("\n" + "=" * 70)
+print("5.6 UJI ASUMSI KLASIK REGRESI")
+print("=" * 70)
+
+# 5.6.1 Uji Multikolinearitas (VIF)
+print("\n5.6.1 Uji Multikolinearitas (VIF - Variance Inflation Factor)")
 print("-" * 50)
 print("Kriteria: VIF < 10 = Tidak ada multikolinearitas")
 print("          VIF >= 10 = Ada multikolinearitas")
@@ -290,8 +382,8 @@ for idx, row in vif_data.iterrows():
     status = "OK (Tidak ada multikolinearitas)" if row['VIF'] < 10 else "MASALAH (Ada multikolinearitas)"
     print(f"   {row['Variabel']:25} : VIF = {row['VIF']:.4f} -> {status}")
 
-# 5.5.2 Uji Normalitas Residual (Shapiro-Wilk)
-print("\n5.5.2 Uji Normalitas Residual (Shapiro-Wilk)")
+# 5.6.2 Uji Normalitas Residual (Shapiro-Wilk)
+print("\n5.6.2 Uji Normalitas Residual (Shapiro-Wilk)")
 print("-" * 50)
 print("H0: Residual berdistribusi normal")
 print("H1: Residual tidak berdistribusi normal")
@@ -303,8 +395,8 @@ print(f"\nStatistik Shapiro-Wilk : {shapiro_stat:.4f}")
 print(f"P-value                : {shapiro_pvalue:.4f}")
 print(f"Keputusan (alpha={ALPHA}): {'Tolak H0 - Residual TIDAK normal' if shapiro_pvalue < ALPHA else 'Gagal Tolak H0 - Residual NORMAL'}")
 
-# 5.5.3 Uji Heteroskedastisitas (Breusch-Pagan)
-print("\n5.5.3 Uji Heteroskedastisitas (Breusch-Pagan)")
+# 5.6.3 Uji Heteroskedastisitas (Breusch-Pagan)
+print("\n5.6.3 Uji Heteroskedastisitas (Breusch-Pagan)")
 print("-" * 50)
 print("H0: Tidak ada heteroskedastisitas (homoskedastis)")
 print("H1: Ada heteroskedastisitas")

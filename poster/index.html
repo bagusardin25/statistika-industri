@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster Analisis Stunting</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="poster-container">
+    <header>
+        <h1>Determinan Stunting di Indonesia</h1>
+        <h2>Analisis Pengaruh Pertumbuhan Ekonomi dan Akses Sanitasi Terhadap Angka Stunting di 34 Provinsi (2023)</h2>
+        <div class="icon-clipboard">📋</div>
+    </header>
+
+    <!-- Intro Section -->
+    <div class="card intro-section">
+        <div class="map-placeholder">🇮🇩</div>
+        <div class="intro-text">
+            <strong>Studi Kasus: 34 Provinsi Indonesia</strong><br>
+            Penelitian ini menganalisis faktor lingkungan dan ekonomi yang memengaruhi prevalensi stunting. Indonesia, dengan populasi lebih dari 270 juta jiwa, masih menghadapi tantangan ganda masalah gizi.
+        </div>
+    </div>
+
+    <!-- Data & Metode -->
+    <div class="card data-section">
+        <div class="card-title">Data & Metode</div>
+        <ul>
+            <li><strong>Sumber Data:</strong> BPS & Kemenkes (Tahun 2023)</li>
+            <li><strong>Jenis Data:</strong> Cross-Section (34 Provinsi)</li>
+            <li><strong>Metode:</strong> Regresi Linier Berganda</li>
+            <li><strong>Software:</strong> Python (Pandas, Statsmodels)</li>
+        </ul>
+    </div>
+
+    <!-- Variabel -->
+    <div class="card variable-section">
+        <div class="card-title">Variabel Penelitian</div>
+        <ul>
+            <li><strong>Y (Dependen):</strong> Angka Stunting (%)</li>
+            <li><strong>X1 (Independen):</strong> Pertumbuhan Ekonomi (%)</li>
+            <li><strong>X2 (Independen):</strong> Akses Sanitasi Layak (%)</li>
+        </ul>
+    </div>
+
+    <!-- Scatter Plot -->
+    <div class="card chart-section">
+        <div class="card-title">Visualisasi Data (Scatter Plot)</div>
+        <img src="scatter_plot.png" alt="Scatter Plot Stunting vs Ekonomi dan Sanitasi">
+        <p style="font-size: 0.9em; margin-top: 10px;">
+            <em>Kiri: Pertumbuhan Ekonomi vs Stunting (Tidak Signifikan)<br>
+            Kanan: Akses Sanitasi vs Stunting (Signifikan, Korelasi Negatif)</em>
+        </p>
+    </div>
+
+    <!-- Statistika Deskriptif -->
+    <div class="card stats-section">
+        <div class="card-title">Statistika Deskriptif</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Variabel</th>
+                    <th>N</th>
+                    <th>Minimum</th>
+                    <th>Maksimum</th>
+                    <th>Mean</th>
+                    <th>Std. Dev</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Stunting (Y)</td>
+                    <td>34</td>
+                    <td>7.20%</td>
+                    <td>37.90%</td>
+                    <td>22.44%</td>
+                    <td>6.12%</td>
+                </tr>
+                <tr>
+                    <td>Pertumbuhan Ekonomi (X1)</td>
+                    <td>34</td>
+                    <td>1.80%</td>
+                    <td>20.49%</td>
+                    <td>5.32%</td>
+                    <td>2.93%</td>
+                </tr>
+                <tr>
+                    <td>Akses Sanitasi (X2)</td>
+                    <td>34</td>
+                    <td>43.00%</td>
+                    <td>96.42%</td>
+                    <td>82.57%</td>
+                    <td>9.46%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Kesimpulan -->
+    <div class="card conclusion-section">
+        <div class="card-title">Kesimpulan</div>
+        <p class="conclusion-text">
+            Berdasarkan hasil analisis, ditemukan bahwa <strong>Akses Sanitasi (X2)</strong> memiliki pengaruh yang signifikan terhadap penurunan angka stunting, sedangkan <strong>Pertumbuhan Ekonomi (X1)</strong> tidak berpengaruh signifikan. Hal ini menunjukkan bahwa peningkatan infrastruktur kesehatan dasar lebih krusial dibandingkan sekadar peningkatan laju ekonomi makro dalam upaya penanggulangan stunting di Indonesia.
+        </p>
+    </div>
+
+    <footer>
+        <p>Tugas Besar Statistika Industri - [Bagus Ardin] - IS-07-01</p>
+    </footer>
+</div>
+
+</body>
+</html>
