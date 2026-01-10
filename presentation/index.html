@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Stunting - Presentasi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Slide Dots -->
+    <div class="slide-dots" id="slideDots"></div>
+
+    <!-- Slides Container -->
+    <div class="slides-container" id="slidesContainer">
+
+        <!-- Slide 1: Title -->
+        <div class="slide title-slide active">
+            <div class="slide-content">
+                <h1 class="animate">Analisis Pengaruh Pertumbuhan Ekonomi dan Akses Sanitasi Terhadap Angka Stunting
+                </h1>
+                <p class="subtitle animate">Di 34 Provinsi Indonesia Tahun 2023</p>
+
+                <div class="animate" style="margin: 30px 0;">
+                    <p style="color: var(--accent-cyan); font-size: 1.1rem;">📚 Statistika Industri</p>
+                    <p style="color: var(--text-gray);">Dosen Pengampu: Dr. Arip Ramadan, S.Si., M.Stat.</p>
+                </div>
+
+                <div class="team-grid animate">
+                    <div class="team-member">
+                        <div class="name">Bagus Ardin Prayoga</div>
+                        <div class="role">102062400064</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="name">Aldi Rachmatdianto</div>
+                        <div class="role">102062400069</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="name">Ida Bagus Giri Krisnabhawa</div>
+                        <div class="role">102062400117</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="name">Naufal Syahruradli</div>
+                        <div class="role">102062400103</div>
+                    </div>
+                </div>
+
+                <p class="animate" style="margin-top: 40px; color: var(--text-gray); font-size: 0.9rem;">
+                    Program Studi Sistem Informasi – Kampus Surabaya<br>
+                    Tahun Akademik 2025
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Latar Belakang -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Latar Belakang</h2>
+
+                <div class="cards-grid">
+                    <div class="card animate">
+                        <div class="card-icon">🎯</div>
+                        <h3>Tantangan Nasional</h3>
+                        <p>Stunting masih menjadi tantangan besar bagi kualitas SDM Indonesia menuju <strong>Indonesia
+                                Emas 2045</strong>.</p>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">🗺️</div>
+                        <h3>Variasi Geografis</h3>
+                        <p>Prevalensi stunting bervariasi antar wilayah meskipun berbagai intervensi telah dilakukan
+                            secara nasional.</p>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">🔄</div>
+                        <h3>Faktor Multidimensi</h3>
+                        <p>Penyebab stunting bersifat kompleks, melibatkan aspek ekonomi, kesehatan, dan infrastruktur
+                            dasar.</p>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">💡</div>
+                        <h3>Hipotesis Penelitian</h3>
+                        <p>Pertumbuhan ekonomi dan akses sanitasi diduga berpengaruh signifikan terhadap angka stunting.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Rumusan Masalah -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Rumusan Masalah</h2>
+
+                <div class="findings-list animate">
+                    <div class="finding-item">
+                        <div class="finding-number">1</div>
+                        <div class="finding-content">
+                            <h4>Penyebaran Stunting</h4>
+                            <p>Bagaimana penyebaran angka stunting di 34 provinsi Indonesia tahun 2023?</p>
+                        </div>
+                    </div>
+                    <div class="finding-item">
+                        <div class="finding-number">2</div>
+                        <div class="finding-content">
+                            <h4>Pengaruh Variabel</h4>
+                            <p>Apakah pertumbuhan ekonomi dan akses sanitasi berpengaruh signifikan terhadap angka
+                                stunting?</p>
+                        </div>
+                    </div>
+                    <div class="finding-item">
+                        <div class="finding-number">3</div>
+                        <div class="finding-content">
+                            <h4>Besaran Pengaruh</h4>
+                            <p>Seberapa besar pengaruh kedua variabel tersebut secara parsial dan simultan?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Tujuan Penelitian -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Tujuan Penelitian</h2>
+
+                <div class="cards-grid" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="card animate">
+                        <div class="card-icon">📊</div>
+                        <h3>Deskripsi Profil</h3>
+                        <p>Mendeskripsikan profil angka stunting, pertumbuhan ekonomi, dan akses sanitasi di 34
+                            provinsi.</p>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">🔗</div>
+                        <h3>Analisis Korelasi</h3>
+                        <p>Menganalisis hubungan korelasi antara variabel dependen dan independen.</p>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">📐</div>
+                        <h3>Uji Signifikansi</h3>
+                        <p>Menguji signifikansi pengaruh parsial (Uji t) dan simultan (Uji F).</p>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">🧮</div>
+                        <h3>Model Prediksi</h3>
+                        <p>Membangun model regresi linier berganda untuk memprediksi angka stunting.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Metodologi Penelitian -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Metodologi Penelitian</h2>
+
+                <div class="cards-grid">
+                    <div class="card animate">
+                        <div class="card-icon">📁</div>
+                        <h3>Sumber Data</h3>
+                        <ul>
+                            <li>Badan Pusat Statistik (BPS)</li>
+                            <li>Kementerian Kesehatan RI</li>
+                            <li>Tahun Data: 2023</li>
+                        </ul>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">📍</div>
+                        <h3>Observasi</h3>
+                        <ul>
+                            <li><strong>34 Provinsi</strong> Indonesia</li>
+                            <li>Cross-sectional Data</li>
+                            <li>Tingkat Provinsi</li>
+                        </ul>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">📋</div>
+                        <h3>Variabel</h3>
+                        <ul>
+                            <li><strong>Y:</strong> Angka Stunting (%)</li>
+                            <li><strong>X₁:</strong> Pertumbuhan Ekonomi (%)</li>
+                            <li><strong>X₂:</strong> Akses Sanitasi Layak (%)</li>
+                        </ul>
+                    </div>
+                    <div class="card animate">
+                        <div class="card-icon">🔬</div>
+                        <h3>Metode Analisis</h3>
+                        <ul>
+                            <li>Regresi Linier Berganda</li>
+                            <li>Uji Asumsi Klasik</li>
+                            <li>Uji t & Uji F</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Statistik Deskriptif -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Statistik Deskriptif</h2>
+                <p class="animate" style="color: var(--text-gray); margin-bottom: 30px;">Data 34 Provinsi Indonesia
+                    Tahun 2023</p>
+
+                <table class="stats-table animate">
+                    <thead>
+                        <tr>
+                            <th>Statistik</th>
+                            <th>Stunting (Y)</th>
+                            <th>Ekonomi (X₁)</th>
+                            <th>Sanitasi (X₂)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>N</strong></td>
+                            <td>34</td>
+                            <td>34</td>
+                            <td>34</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rata-rata</strong></td>
+                            <td>22,44%</td>
+                            <td>5,40%</td>
+                            <td>82,57%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Median</strong></td>
+                            <td>23,20%</td>
+                            <td>4,95%</td>
+                            <td>83,38%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Std. Deviasi</strong></td>
+                            <td>5,96%</td>
+                            <td>3,03%</td>
+                            <td>9,46%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Minimum</strong></td>
+                            <td>7,20%</td>
+                            <td>1,80%</td>
+                            <td>43,00%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Maksimum</strong></td>
+                            <td>37,90%</td>
+                            <td>20,49%</td>
+                            <td>96,42%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 7: Visualisasi Data -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Visualisasi Data</h2>
+                <p class="animate" style="color: var(--text-gray); margin-bottom: 30px;">Scatter Plot Hubungan Variabel
+                </p>
+
+                <div class="image-container animate">
+                    <img src="../17_scatter_plot_visualisasi.png" alt="Scatter Plot">
+                </div>
+
+                <p class="animate" style="color: var(--text-gray); font-size: 0.95rem; margin-top: 20px;">
+                    <em>Kiri: Pertumbuhan Ekonomi vs Stunting (Tidak Signifikan) | Kanan: Akses Sanitasi vs Stunting
+                        (Signifikan Negatif)</em>
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Hasil Regresi Berganda -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Hasil Analisis Regresi Berganda</h2>
+
+                <div class="highlight-box animate">
+                    <p style="color: var(--text-gray); margin-bottom: 15px;">Persamaan Regresi:</p>
+                    <div class="equation">Ŷ = 44,9371 + 0,0139X₁ - 0,2734X₂</div>
+                </div>
+
+                <div class="results-grid animate">
+                    <div class="result-card">
+                        <div class="result-value neutral">+0,0139</div>
+                        <div class="result-label">Koefisien X₁ (Ekonomi)<br><small>Tidak Signifikan</small></div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value negative">-0,2734</div>
+                        <div class="result-label">Koefisien X₂ (Sanitasi)<br><small>Signifikan Negatif</small></div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" style="color: var(--accent-purple);">18,84%</div>
+                        <div class="result-label">R-Squared<br><small>Koefisien Determinasi</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Uji Signifikansi -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Uji Signifikansi</h2>
+
+                <div class="animate" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="test-row">
+                        <div class="test-name">🎯 Uji Simultan (F)</div>
+                        <div class="test-stat">F-hitung = 3,5992 > F-tabel = 3,3048 | p = 0,0393</div>
+                        <div class="test-result">
+                            <span class="badge success">✓ Signifikan</span>
+                        </div>
+                    </div>
+
+                    <div class="test-row">
+                        <div class="test-name">📊 Uji Parsial (t) - Ekonomi</div>
+                        <div class="test-stat">t-hitung = 0,0434 | p = 0,9657</div>
+                        <div class="test-result">
+                            <span class="badge danger">✗ Tidak Signifikan</span>
+                        </div>
+                    </div>
+
+                    <div class="test-row">
+                        <div class="test-name">🚿 Uji Parsial (t) - Sanitasi</div>
+                        <div class="test-stat">t-hitung = -2,6762 | p = 0,0118</div>
+                        <div class="test-result">
+                            <span class="badge success">✓ Signifikan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box animate"
+                    style="margin-top: 40px; max-width: 800px; margin-left: auto; margin-right: auto;">
+                    <p style="font-size: 1.1rem;">💡 <strong>Insight:</strong> Secara simultan kedua variabel
+                        berpengaruh, namun secara parsial hanya <span style="color: var(--accent-cyan);">Akses
+                            Sanitasi</span> yang signifikan.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Uji Asumsi Klasik -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Uji Asumsi Klasik</h2>
+
+                <div class="animate" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="test-row">
+                        <div class="test-name">📈 Normalitas (Shapiro-Wilk)</div>
+                        <div class="test-stat">W = 0,9897 | p = 0,9833</div>
+                        <div class="test-result">
+                            <span class="badge success">✓ Terpenuhi</span>
+                        </div>
+                    </div>
+
+                    <div class="test-row">
+                        <div class="test-name">🔗 Multikolinieritas (VIF)</div>
+                        <div class="test-stat">VIF X₁ = 1,003 | VIF X₂ = 1,003</div>
+                        <div class="test-result">
+                            <span class="badge success">✓ Terpenuhi</span>
+                        </div>
+                    </div>
+
+                    <div class="test-row">
+                        <div class="test-name">📊 Heteroskedastisitas (BP)</div>
+                        <div class="test-stat">BP = 0,9890 | p = 0,6099</div>
+                        <div class="test-result">
+                            <span class="badge success">✓ Terpenuhi</span>
+                        </div>
+                    </div>
+
+                    <div class="test-row">
+                        <div class="test-name">🔄 Autokorelasi (DW)</div>
+                        <div class="test-stat">DW = 1,3145 | dL = 1,333</div>
+                        <div class="test-result">
+                            <span class="badge warning">⚠ Ada Autokorelasi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="animate" style="color: var(--text-gray); margin-top: 30px; font-size: 0.95rem;">
+                    * Autokorelasi pada data cross-section dapat diabaikan karena tidak ada urutan waktu
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 11: Temuan Kunci -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Temuan Kunci</h2>
+
+                <div class="findings-list animate">
+                    <div class="finding-item">
+                        <div class="finding-number">1</div>
+                        <div class="finding-content">
+                            <h4>✅ Sanitasi adalah Faktor Kritis</h4>
+                            <p>Akses sanitasi berpengaruh signifikan dan negatif terhadap stunting. Setiap peningkatan
+                                1% sanitasi menurunkan stunting sebesar 0,27%.</p>
+                        </div>
+                    </div>
+                    <div class="finding-item">
+                        <div class="finding-number">2</div>
+                        <div class="finding-content">
+                            <h4>⚠️ Ekonomi Belum Cukup</h4>
+                            <p>Pertumbuhan ekonomi makro tidak menjamin penurunan stunting secara langsung. Diperlukan
+                                pemerataan dan investasi pada layanan dasar.</p>
+                        </div>
+                    </div>
+                    <div class="finding-item">
+                        <div class="finding-number">3</div>
+                        <div class="finding-content">
+                            <h4>📊 Faktor Lain Dominan</h4>
+                            <p>Model hanya menjelaskan 18,84% variasi stunting. Faktor lain seperti pendidikan ibu, pola
+                                asuh, dan nutrisi sangat berpengaruh.</p>
+                        </div>
+                    </div>
+                    <div class="finding-item">
+                        <div class="finding-number">4</div>
+                        <div class="finding-content">
+                            <h4>🗺️ Disparitas Wilayah</h4>
+                            <p>Ketimpangan geografis sangat tinggi antara wilayah Barat (lebih baik) dan Timur Indonesia
+                                (perlu perhatian khusus).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Implikasi Pemerintah -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Implikasi bagi Pemerintah</h2>
+
+                <div class="cards-grid animate">
+                    <div class="card" style="border-top: 4px solid var(--accent-green);">
+                        <div class="card-icon">🏗️</div>
+                        <h3>Prioritas Sanitasi</h3>
+                        <p>Fokus pembangunan infrastruktur sanitasi di provinsi dengan akses <strong>&lt;75%</strong>,
+                            terutama Papua dan NTT.</p>
+                    </div>
+                    <div class="card" style="border-top: 4px solid var(--accent-blue);">
+                        <div class="card-icon">🔄</div>
+                        <h3>Konvergensi Program</h3>
+                        <p>Integrasikan program kesehatan, ekonomi, dan infrastruktur secara sinergis untuk hasil
+                            maksimal.</p>
+                    </div>
+                    <div class="card" style="border-top: 4px solid var(--accent-purple);">
+                        <div class="card-icon">🎯</div>
+                        <h3>Intervensi Target</h3>
+                        <p>Fokus khusus di provinsi dengan stunting tinggi (≥30%): NTT, Sulawesi Barat, dan Gorontalo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Rekomendasi Penelitian -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Rekomendasi Penelitian Lanjutan</h2>
+
+                <div class="cards-grid animate">
+                    <div class="card">
+                        <div class="card-icon">📚</div>
+                        <h3>Tambah Variabel</h3>
+                        <p>Masukkan variabel pendidikan ibu, ketahanan pangan, dan akses layanan kesehatan untuk model
+                            yang lebih komprehensif.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🗺️</div>
+                        <h3>Analisis Spasial</h3>
+                        <p>Gunakan Geographically Weighted Regression (GWR) untuk mengatasi autokorelasi dan pola
+                            geografis.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📅</div>
+                        <h3>Data Longitudinal</h3>
+                        <p>Pertimbangkan data panel untuk melihat tren waktu dan efektivitas intervensi dari tahun ke
+                            tahun.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Kesimpulan -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 class="section-title animate">Kesimpulan</h2>
+
+                <div class="conclusion-points animate">
+                    <div class="conclusion-item">
+                        <div class="conclusion-icon">🚿</div>
+                        <div>
+                            <h4>Sanitasi adalah Kunci</h4>
+                            <p>Akses sanitasi adalah faktor kritis dan signifikan yang dapat dikendalikan untuk
+                                menurunkan stunting di Indonesia.</p>
+                        </div>
+                    </div>
+                    <div class="conclusion-item">
+                        <div class="conclusion-icon">💰</div>
+                        <div>
+                            <h4>Ekonomi Bukan Segalanya</h4>
+                            <p>Mengandalkan pertumbuhan ekonomi saja tidak efektif tanpa pemerataan layanan dasar ke
+                                seluruh wilayah.</p>
+                        </div>
+                    </div>
+                    <div class="conclusion-item">
+                        <div class="conclusion-icon">🔄</div>
+                        <div>
+                            <h4>Pendekatan Holistik</h4>
+                            <p>Diperlukan pendekatan multidimensi dan intervensi yang tepat sasaran berbasis data
+                                empiris.</p>
+                        </div>
+                    </div>
+                    <div class="conclusion-item">
+                        <div class="conclusion-icon">📊</div>
+                        <div>
+                            <h4>Kontribusi Empiris</h4>
+                            <p>Penelitian ini memberikan dasar empiris bahwa infrastruktur dasar tidak boleh diabaikan
+                                dalam penanggulangan stunting.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Thank You -->
+        <div class="slide thankyou-slide">
+            <div class="slide-content">
+                <h1 class="animate">Terima Kasih</h1>
+                <p class="animate">Pertanyaan & Diskusi</p>
+
+                <div class="team-grid animate" style="margin-top: 60px;">
+                    <div class="team-member">
+                        <div class="name">📧 Contact</div>
+                        <div class="role">bagusardin25@upi.edu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn">◀</button>
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">15</span>
+        </div>
+        <button class="nav-btn" id="nextBtn">▶</button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let currentIndex = 0;
+
+        const progressBar = document.getElementById('progressBar');
+        const slideDots = document.getElementById('slideDots');
+        const currentSlideSpan = document.getElementById('currentSlide');
+        const totalSlidesSpan = document.getElementById('totalSlides');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Initialize
+        totalSlidesSpan.textContent = totalSlides;
+
+        // Create dots
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.addEventListener('click', () => goToSlide(i));
+            slideDots.appendChild(dot);
+        }
+
+        const dots = document.querySelectorAll('.dot');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentIndex) {
+                    slide.classList.add('active');
+                } else if (index < currentIndex) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+
+            currentSlideSpan.textContent = currentIndex + 1;
+            progressBar.style.width = ((currentIndex + 1) / totalSlides * 100) + '%';
+        }
+
+        function nextSlide() {
+            if (currentIndex < totalSlides - 1) {
+                currentIndex++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            currentIndex = index;
+            updateSlide();
+        }
+
+        // Event Listeners
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            } else if (e.key === 'Home') {
+                goToSlide(0);
+            } else if (e.key === 'End') {
+                goToSlide(totalSlides - 1);
+            }
+        });
+
+        // Click Navigation (click anywhere to go next)
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-controls') && !e.target.closest('.dot')) {
+                nextSlide();
+            }
+        });
+
+        // Touch/Swipe Support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            if (touchEndX < touchStartX - swipeThreshold) {
+                nextSlide();
+            } else if (touchEndX > touchStartX + swipeThreshold) {
+                prevSlide();
+            }
+        }
+    </script>
+
+</body>
+
+</html>

@@ -7,6 +7,7 @@ import pandas as pd
 from scipy import stats
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
+import os
 
 # Data 34 Provinsi Indonesia Tahun 2023
 data = {
@@ -175,6 +176,17 @@ print("\n" + "=" * 80)
 print("MEMBUAT VISUALISASI STATISTIK DESKRIPTIF...")
 print("=" * 80)
 
+# Konfigurasi output directory
+output_dir = 'D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/'
+try:
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Output directory: {output_dir}")
+except (OSError, PermissionError):
+    print(f"Warning: Tidak dapat membuat directory {output_dir}")
+    print("Menggunakan current working directory...")
+    output_dir = './'
+    print(f"Output directory: {os.path.abspath(output_dir)}")
+
 # 1. Histogram Y (Stunting) - File Terpisah
 fig1, ax1 = plt.subplots(figsize=(8, 6))
 ax1.hist(Y, bins=8, color='steelblue', edgecolor='black', alpha=0.7)
@@ -186,7 +198,7 @@ ax1.set_title('Distribusi Y (Angka Stunting)\n34 Provinsi Indonesia Tahun 2023',
 ax1.legend(fontsize=10)
 ax1.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12a_histogram_Y_stunting.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '12a_histogram_Y_stunting.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar 1: 12a_histogram_Y_stunting.png berhasil disimpan!")
 
@@ -201,7 +213,7 @@ ax2.set_title('Distribusi X1 (Pertumbuhan Ekonomi)\n34 Provinsi Indonesia Tahun 
 ax2.legend(fontsize=10)
 ax2.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12b_histogram_X1_ekonomi.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '12b_histogram_X1_ekonomi.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar 2: 12b_histogram_X1_ekonomi.png berhasil disimpan!")
 
@@ -216,7 +228,7 @@ ax3.set_title('Distribusi X2 (Akses Sanitasi)\n34 Provinsi Indonesia Tahun 2023'
 ax3.legend(fontsize=10)
 ax3.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12c_histogram_X2_sanitasi.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '12c_histogram_X2_sanitasi.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar 3: 12c_histogram_X2_sanitasi.png berhasil disimpan!")
 
@@ -232,7 +244,7 @@ ax4.set_ylabel('Nilai (%)', fontsize=11)
 ax4.set_title('Boxplot Perbandingan Variabel\n34 Provinsi Indonesia Tahun 2023', fontsize=12, fontweight='bold')
 ax4.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12d_boxplot_perbandingan.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '12d_boxplot_perbandingan.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar 4: 12d_boxplot_perbandingan.png berhasil disimpan!")
 
@@ -257,7 +269,7 @@ ax5.set_xticklabels(stats_names)
 ax5.legend(fontsize=10)
 ax5.grid(True, alpha=0.3, axis='y')
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12e_barchart_statistik.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '12e_barchart_statistik.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar 5: 12e_barchart_statistik.png berhasil disimpan!")
 
@@ -296,7 +308,7 @@ ax6.text(0.5, 0.5, table_text, transform=ax6.transAxes, fontsize=11,
          verticalalignment='center', horizontalalignment='center',
          fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.9))
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/12f_tabel_statistik_deskriptif.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '12f_tabel_statistik_deskriptif.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar 6: 12f_tabel_statistik_deskriptif.png berhasil disimpan!")
 
@@ -518,7 +530,7 @@ ax6.set_title('Proporsi Kategori Akses Sanitasi (X2)', fontsize=12, fontweight='
 plt.suptitle('Statistik Deskriptif Variabel Kategorik\n34 Provinsi Indonesia Tahun 2023', 
              fontsize=14, fontweight='bold', y=1.02)
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/13_statistik_kategorik.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '13_statistik_kategorik.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar: 13_statistik_kategorik.png berhasil disimpan!")
 
@@ -571,7 +583,7 @@ ax_tabel.text(0.5, 0.5, tabel_kategorik_text, transform=ax_tabel.transAxes, font
               verticalalignment='center', horizontalalignment='center',
               fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightcyan', alpha=0.9))
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/14_tabel_frekuensi_kategorik.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '14_tabel_frekuensi_kategorik.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar: 14_tabel_frekuensi_kategorik.png berhasil disimpan!")
 
@@ -1111,7 +1123,7 @@ ax4_asumsi.grid(True, alpha=0.3, axis='y')
 plt.suptitle('Uji Asumsi Klasik Regresi Berganda\n34 Provinsi Indonesia Tahun 2023', 
              fontsize=14, fontweight='bold', y=1.02)
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/15_uji_asumsi_klasik.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '15_uji_asumsi_klasik.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar: 15_uji_asumsi_klasik.png berhasil disimpan!")
 
@@ -1161,7 +1173,7 @@ ax_ringkasan.text(0.5, 0.5, ringkasan_asumsi_text, transform=ax_ringkasan.transA
                   verticalalignment='center', horizontalalignment='center',
                   fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.9))
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/16_ringkasan_uji_asumsi_klasik.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '16_ringkasan_uji_asumsi_klasik.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar: 16_ringkasan_uji_asumsi_klasik.png berhasil disimpan!")
 
@@ -1244,7 +1256,7 @@ ax4.grid(True, alpha=0.3)
 plt.suptitle('Analisis Regresi: Pengaruh Pertumbuhan Ekonomi dan Akses Sanitasi\nterhadap Angka Stunting di 34 Provinsi Indonesia (2023)', 
              fontsize=14, fontweight='bold', y=1.02)
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/10_regresi_linier_X1_X2.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '10_regresi_linier_X1_X2.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar 1: 10_regresi_linier_X1_X2.png berhasil disimpan!")
 
@@ -1300,7 +1312,7 @@ ax.text(0.5, 0.5, summary_text, transform=ax.transAxes, fontsize=11,
         fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
 
 plt.tight_layout()
-plt.savefig('D:/Semester 3/STATISTIKA INDUSTRI/statistika-industri/11_ringkasan_uji_statistik.png', dpi=150, bbox_inches='tight')
+plt.savefig(output_dir + '11_ringkasan_uji_statistik.png', dpi=150, bbox_inches='tight')
 plt.close()
 print("Gambar 2: 11_ringkasan_uji_statistik.png berhasil disimpan!")
 
